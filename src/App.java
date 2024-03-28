@@ -47,7 +47,7 @@ public class App {
                         System.out.print("Nome do ativo: ");
                         nomeAtivo = entradaString.nextLine();
                         
-                        if (!nomeAtivo.toLowerCase().equals("")) {
+                        if (!nomeAtivo.equals("")) {
                             ativo = Carteira.pesquisarAtivo(nomeAtivo);
                             if (ativo == null) {
                                 System.out.println("\nAtivo não encontrado.");
