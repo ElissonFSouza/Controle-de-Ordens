@@ -52,6 +52,6 @@ public class Ativo {
 
     @Override
     public String toString() {
-        return "\n======== " + nome + " ========" + "\nQuantidade: " + quantidade + "\nPreço Médio: R$ " + precoMedio + "\nTotal Atual: R$ " + totalAtual;
+        return "\n======== " + nome + " ========" + "\nQuantidade: " + quantidade + "\nPreço médio: R$ " + precoMedio + "\nTotal atual: R$ " + totalAtual;
     }
 }

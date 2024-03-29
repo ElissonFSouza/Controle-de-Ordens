@@ -1,14 +1,13 @@
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        Scanner entradaMenu = new Scanner(System.in);
-        Scanner entradaString = new Scanner(System.in);
+        Scanner entrada = new Scanner(System.in);
 
-        String aux;
         int menu = 0;
         boolean concluido;
 
@@ -20,21 +19,23 @@ public class App {
             do {
                 try {
                     exibirMenu();                    
-                    aux = entradaMenu.nextLine();
-                    menu = Integer.parseInt(aux);
+                    menu = entrada.nextInt();
                     concluido = true;
-                } catch (NumberFormatException e) {
-                    System.out.println("\nDigite o valor numérico correspondente à opção desejada.");
+                } catch (InputMismatchException e) {
+                    System.out.println("\nDigite o número correspondente à opção desejada.");
+                    entrada.next();
                 }
             } while (!concluido);
 
+            entrada.nextLine(); // Consumir nova linha pendente
+
             switch (menu) {
                 case 1:
-                    cadastrarOrdem("Compra");
+                    cadastrarOrdem("Compra", entrada);
                     break;
 
                 case 2:
-                    cadastrarOrdem("Venda");
+                    cadastrarOrdem("Venda", entrada);
                     break;
 
                 case 3:
@@ -45,9 +46,9 @@ public class App {
                     concluido = false;
                     do {
                         System.out.print("Nome do ativo: ");
-                        nomeAtivo = entradaString.nextLine();
+                        nomeAtivo = entrada.nextLine().trim();
                         
-                        if (!nomeAtivo.equals("")) {
+                        if (!nomeAtivo.isEmpty()) {
                             ativo = Carteira.pesquisarAtivo(nomeAtivo);
                             if (ativo == null) {
                                 System.out.println("\nAtivo não encontrado.");
@@ -61,14 +62,20 @@ public class App {
                         }
                     } while (!concluido);
                     break;
+
+                case 5:
+                    System.out.println("\nSistema encerrado.");
             
                 default:
                     System.out.println("\nOpção inválida.");
+                    System.out.println("Digite o número correspondente à opção desejada.");
             }            
-        } while (menu != 5);        
+        } while (menu != 5);  
+        
+        entrada.close();
     }
 
-    static void cadastrarOrdem(String tipo) {
+    static void cadastrarOrdem(String tipo, Scanner entrada) {
         boolean concluido;
 
         Ativo ativo;
@@ -81,21 +88,18 @@ public class App {
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-        Scanner entrada = new Scanner(System.in);
-        Scanner entradaString = new Scanner(System.in);  
-
         System.out.println("\n====== Cadastrar ordem de " + tipo.toLowerCase() + " ======");
 
         concluido = false;
         do {
             System.out.print("Nome do ativo: ");
-            nomeAtivo = entradaString.nextLine();
+            nomeAtivo = entrada.nextLine().trim();
 
-            if (!nomeAtivo.equals("")) {
+            if (!nomeAtivo.isEmpty()) {
                 if (Carteira.pesquisarAtivo(nomeAtivo) == null) {
                     if (tipo.equals("Venda")) {
                         System.out.println("\nO ativo informado não está em carteira.");
-                        return;
+                        break;
                     } else {
                         ativo = new Ativo(nomeAtivo);
                         Carteira.adicionarAtivo(ativo);
@@ -111,7 +115,7 @@ public class App {
         do {
             try {
                 System.out.print("Data da " + tipo.toLowerCase() + ": ");
-                dataOrdem = sdf.parse(entradaString.nextLine());
+                dataOrdem = sdf.parse(entrada.nextLine());
                 concluido = true;
             } catch (ParseException e) {
                 System.out.println("A data precisa ser inserida no formato DD/MM/AAAA.");
@@ -122,10 +126,10 @@ public class App {
         do {
             try {
                 System.out.print("Quantidade: ");
-                quantidade = entrada.nextFloat();
+                quantidade = Float.parseFloat(entrada.nextLine());
                 concluido = true;
             } catch (NumberFormatException e) {
-                System.out.println("\nInsira a quantidade no formato correto.");
+                System.out.println("Insira a quantidade no formato correto.");
             }
         } while (!concluido);
 
@@ -133,10 +137,10 @@ public class App {
         do {
             try {
                 System.out.print("Preço: ");
-                preco = entrada.nextFloat();
+                preco = Float.parseFloat(entrada.nextLine());
                 concluido = true;
             } catch (NumberFormatException e) {
-                System.out.println("\nInsira o preço no formato correto.");
+                System.out.println("Insira o preço no formato correto.");
             }
         } while (!concluido);
 
@@ -145,11 +149,12 @@ public class App {
     }
 
     static void exibirMenu() {
-        System.out.println("\n====================================");
+        System.out.println("\n========== Menu Principal ==========");
         System.out.println("\n1 - Cadastrar ordem de compra");
         System.out.println("2 - Cadastrar ordem de venda");
         System.out.println("3 - Exibir lista de ativos");
         System.out.println("4 - Exibir informações de um ativo");
+        System.out.println("5 - Encerrar sistema");
         System.out.print("> ");
     }
 }
