@@ -1,25 +1,29 @@
+package br.elissonsouza.controleordens;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Ordem {
-    private final Date data;
+    private final Date dataOrdem;
     private final float quantidade;
     private final float preco;
     private final float total;
     private final String tipo;
+    private final String tickerAtivo;
 
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-    public Ordem(Date data, float quantidade, float preco, String tipo) {
-        this.data = data;
+    public Ordem(Date data, float quantidade, float preco, String tipo, String tickerAtivo) {
+        this.dataOrdem = data;
         this.quantidade = quantidade;
         this.preco = preco;
         this.total = preco * quantidade;
         this.tipo = tipo;
+        this.tickerAtivo = tickerAtivo;
     }
         
-    public Date getData() {
-        return data;
+    public Date getDataOrdem() {
+        return dataOrdem;
     }
 
     public float getQuantidade() {
@@ -38,8 +42,12 @@ public class Ordem {
         return tipo;
     }
 
+    public String getTickerAtivo() {
+        return tickerAtivo;
+    }
+
     @Override
     public String toString() {
-        return "\nData da ordem: " + sdf.format(data) + "\nTipo: " + tipo + "\nQuantidade: " + quantidade + "\nPreço: R$ " + preco + "\nValor total: R$ " + total;
+        return "\nData da ordem: " + sdf.format(dataOrdem) + "\nTipo: " + tipo + "\nQuantidade: " + quantidade + "\nPreço: R$ " + preco + "\nTotal da ordem: R$ " + total;
     }
 }
