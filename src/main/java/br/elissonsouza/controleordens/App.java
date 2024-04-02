@@ -43,7 +43,7 @@ public class App {
                     break;
 
                 case OPCAO_LISTAR_ATIVOS:
-                    CarteiraDAO.listarAtivos();
+                    AtivoDAO.listarAtivos();
                     break;
 
                 case OPCAO_EXIBIR_INFO_ATIVO:
@@ -67,7 +67,7 @@ public class App {
 
         String tickerAtivo = lerTickerAtivo(entrada);
 
-        Ativo ativo = CarteiraDAO.pesquisarAtivo(tickerAtivo);
+        Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
         if (tipo.equals("Venda") && ativo == null) {
             System.out.println("\nVocê não possui o ativo informado.");
             return;                                 
@@ -88,7 +88,7 @@ public class App {
             ordem = new OrdemVenda(dataOrdem, quantidade, preco, ativo.getPrecoMedio(), tickerAtivo);
         }
         
-        CarteiraDAO.inserirOrdem(ordem, ativo, nomeAtivo);
+        OrdemDAO.inserirOrdem(ordem, ativo, nomeAtivo);
     }
 
     private static void exibirOrdensAtivo(Scanner entrada) {
@@ -101,12 +101,12 @@ public class App {
             tickerAtivo = entrada.nextLine().trim();
             
             if (!tickerAtivo.isEmpty()) {
-                ativo = CarteiraDAO.pesquisarAtivo(tickerAtivo);
+                ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
 
                 if (ativo == null) System.out.println("\nAtivo não encontrado.");
                 else {
                     System.out.println(ativo);
-                    CarteiraDAO.listarOrdens(ativo);
+                    OrdemDAO.listarOrdens(ativo);
                 }
                 concluido = true;
 
