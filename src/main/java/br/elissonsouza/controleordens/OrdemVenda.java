@@ -5,9 +5,9 @@ import java.util.Date;
 public class OrdemVenda extends Ordem {
     private final float custo;
 
-    public OrdemVenda(Date data, float quantidade, float preco, float precoMedio, String tickerAtivo) {
+    public OrdemVenda(Date data, float quantidade, float preco, float custo, String tickerAtivo) {
         super(data, quantidade, preco, "Venda", tickerAtivo);
-        this.custo = quantidade * precoMedio;
+        this.custo = custo;
     }
 
     @Override

@@ -68,7 +68,8 @@ public class App {
         String tickerAtivo = lerTickerAtivo(entrada);
 
         Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
-        if (tipo.equals("Venda") && ativo == null) {
+
+        if (tipo.equals("Venda") && (ativo == null || ativo.getQuantidade() == 0)) {
             System.out.println("\nVocê não possui o ativo informado.");
             return;                                 
         }
@@ -78,6 +79,10 @@ public class App {
         Date dataOrdem = lerDataOrdem(entrada, tipo);   
 
         float quantidade = lerQuantidade(entrada);
+        if (tipo.equals("Venda") && quantidade > ativo.getQuantidade()) {
+            System.out.println("\nNão é possível vender uma quantidade maior do que a quantidade em posse.");
+            return;
+        }
 
         float preco = lerPreco(entrada);
         
@@ -85,7 +90,7 @@ public class App {
         if (tipo.equals("Compra")) {
             ordem = new Ordem(dataOrdem, quantidade, preco, tipo, tickerAtivo);
         } else {
-            ordem = new OrdemVenda(dataOrdem, quantidade, preco, ativo.getPrecoMedio(), tickerAtivo);
+            ordem = new OrdemVenda(dataOrdem, quantidade, preco, quantidade * ativo.getPrecoMedio(), tickerAtivo);
         }
         
         OrdemDAO.inserirOrdem(ordem, ativo, nomeAtivo);
@@ -98,16 +103,18 @@ public class App {
         Boolean concluido = false;
         do {
             System.out.print("Ticker do ativo: ");
-            tickerAtivo = entrada.nextLine().trim();
+            tickerAtivo = entrada.nextLine().trim().toUpperCase();
             
             if (!tickerAtivo.isEmpty()) {
                 ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
 
-                if (ativo == null) System.out.println("\nAtivo não encontrado.");
-                else {
+                if (ativo == null) {
+                    System.out.println("\nAtivo não encontrado.");
+                } else {
                     System.out.println(ativo);
-                    OrdemDAO.listarOrdens(ativo);
+                    OrdemDAO.listarOrdens(tickerAtivo);
                 }
+
                 concluido = true;
 
             } else {

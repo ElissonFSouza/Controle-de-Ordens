@@ -12,18 +12,16 @@ public class AtivoDAO {
 
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "INSERT INTO Ativo (ticker, nome, quantidade, precoMedio, totalAtual) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO Ativo (ticker, nome, quantidade, precoMedio, saldoVendas) VALUES (?, ?, ?, ?, 0)";
             preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, ordem.getTickerAtivo());
             preparedStatement.setString(2, nomeAtivo);
             preparedStatement.setFloat(3, ordem.getQuantidade());
             preparedStatement.setFloat(4, ordem.getPreco());
-            preparedStatement.setFloat(5, ordem.getTotal());
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("\nHouve um erro ao inserir as informações no banco de dados.");
-            e.printStackTrace();
+            System.err.println("\nHouve um erro ao inserir as informações no banco de dados: " + e.getMessage());
 
         } finally {
             encerrarRecursos(null, preparedStatement);
@@ -31,18 +29,24 @@ public class AtivoDAO {
     }
 
     public static void atualizarAtivo(Ordem ordem, Ativo ativo) {
-        float quantidade;
-        float totalAtual;
-        float precoMedio;
+        // Obter dados atuais do ativo
+        float quantidadeAtivo = ativo.getQuantidade();        
+        float precoMedioAtivo = ativo.getPrecoMedio();
+        float saldoVendasAtivo = ativo.getSaldoVendas();
+        float totalAtivo = quantidadeAtivo * precoMedioAtivo;
+        // Obter dados da ordem atual
+        float quantidadeOrdem = ordem.getQuantidade();
+        float precoOrdem = ordem.getPreco();
+        float totalOrdem = quantidadeOrdem * precoOrdem;
         
-        if (ordem.getTipo().equals("Compra")) {
-            quantidade = ativo.getQuantidade() + ordem.getQuantidade();
-            totalAtual = ativo.getTotalAtual() + ordem.getTotal();      
-            precoMedio = totalAtual / quantidade;
+        // Atualizar dados do ativo
+        if (ordem.getTipo().equals("Compra")) { 
+            quantidadeAtivo += quantidadeOrdem;
+            precoMedioAtivo = (totalAtivo + totalOrdem) / quantidadeAtivo;
         } else {
-            quantidade = ativo.getQuantidade() - ordem.getQuantidade();
-            totalAtual = ativo.getTotalAtual() - ordem.getQuantidade() * ativo.getPrecoMedio();
-            precoMedio = ativo.getPrecoMedio();
+            quantidadeAtivo -= quantidadeOrdem;            
+            saldoVendasAtivo += totalOrdem - (quantidadeOrdem * precoMedioAtivo);
+            if (quantidadeAtivo == 0) precoMedioAtivo = 0;
         }        
 
         Connection connection = null;
@@ -50,17 +54,16 @@ public class AtivoDAO {
 
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "UPDATE Ativo SET quantidade = ?, precoMedio = ?, totalAtual = ? WHERE ticker = ?";
+            String sql = "UPDATE Ativo SET quantidade = ?, precoMedio = ?, saldoVendas = ? WHERE ticker = ?";
             preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setFloat(1, quantidade);
-            preparedStatement.setFloat(2, precoMedio);
-            preparedStatement.setFloat(3, totalAtual);
+            preparedStatement.setFloat(1, quantidadeAtivo);
+            preparedStatement.setFloat(2, precoMedioAtivo);
+            preparedStatement.setFloat(3, saldoVendasAtivo);
             preparedStatement.setString(4, ativo.getTicker());
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("\nHouve um erro ao inserir as informações no banco de dados.");
-            e.printStackTrace();
+            System.err.println("\nHouve um erro ao inserir as informações no banco de dados: " + e.getMessage());
 
         } finally {
             encerrarRecursos(null, preparedStatement);
@@ -85,9 +88,9 @@ public class AtivoDAO {
                 String nome = resultSet.getString("nome");
                 float quantidade = resultSet.getFloat("quantidade");
                 float precoMedio = resultSet.getFloat("precoMedio");
-                float totalAtual = resultSet.getFloat("totalAtual");
+                float saldoVendas = resultSet.getFloat("saldoVendas");
 
-                ativo = new Ativo(ticker, nome, quantidade, precoMedio, totalAtual);
+                ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
             }
 
         } catch (SQLException e) {
@@ -111,7 +114,7 @@ public class AtivoDAO {
             preparedStatement = connection.prepareStatement(sql);
             resultSet = preparedStatement.executeQuery();
             
-            if (!resultSet.isBeforeFirst()) { // Verifica se existem linhas na tabela
+            if (!resultSet.isBeforeFirst()) { // Verifica se existem linhas no resultado da busca
                 System.out.println("\nNão há ativos na carteira.");
 
             } else {
@@ -122,9 +125,9 @@ public class AtivoDAO {
                     String nome = resultSet.getString("nome");
                     float quantidade = resultSet.getFloat("quantidade");
                     float precoMedio = resultSet.getFloat("precoMedio");
-                    float totalAtual = resultSet.getFloat("totalAtual");
+                    float saldoVendas = resultSet.getFloat("saldoVendas");
 
-                    Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, totalAtual);
+                    Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
                     System.out.println(ativo);
                 }
             }

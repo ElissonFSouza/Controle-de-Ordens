@@ -7,7 +7,6 @@ public class Ordem {
     private final Date dataOrdem;
     private final float quantidade;
     private final float preco;
-    private final float total;
     private final String tipo;
     private final String tickerAtivo;
 
@@ -17,7 +16,6 @@ public class Ordem {
         this.dataOrdem = data;
         this.quantidade = quantidade;
         this.preco = preco;
-        this.total = preco * quantidade;
         this.tipo = tipo;
         this.tickerAtivo = tickerAtivo;
     }
@@ -34,10 +32,6 @@ public class Ordem {
         return preco;
     }
 
-    public float getTotal() {
-        return total;
-    }
-
     public String getTipo() {
         return tipo;
     }
@@ -48,6 +42,6 @@ public class Ordem {
 
     @Override
     public String toString() {
-        return "\nData da ordem: " + sdf.format(dataOrdem) + "\nTipo: " + tipo + "\nQuantidade: " + quantidade + "\nPreço: R$ " + preco + "\nTotal da ordem: R$ " + total;
+        return "\nData da ordem: " + sdf.format(dataOrdem) + "\nTipo: " + tipo + "\nQuantidade: " + quantidade + "\nPreço: R$ " + preco + "\nTotal da ordem: R$ " + quantidade * preco;
     }
 }
