@@ -1,6 +1,3 @@
-DROP TABLE Ativo;
-DROP TABLE Ordem;
-
 CREATE TABLE IF NOT EXISTS Ativo (
     ticker TEXT PRIMARY KEY,
     nome TEXT,
