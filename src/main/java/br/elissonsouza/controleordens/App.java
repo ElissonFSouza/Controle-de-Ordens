@@ -74,7 +74,8 @@ public class App {
             return;                                 
         }
 
-        String nomeAtivo = lerNomeAtivo(entrada);
+        String nomeAtivo = null;
+        if (ativo == null) nomeAtivo = lerNomeAtivo(entrada);        
 
         Date dataOrdem = lerDataOrdem(entrada, tipo);   
 
@@ -98,27 +99,27 @@ public class App {
 
     private static void exibirOrdensAtivo(Scanner entrada) {
         Ativo ativo;
-        String tickerAtivo;
+        String tickerOuNome;
         
         Boolean concluido = false;
         do {
-            System.out.print("Ticker do ativo: ");
-            tickerAtivo = entrada.nextLine().trim().toUpperCase();
+            System.out.print("Ticker ou nome do ativo: ");
+            tickerOuNome = entrada.nextLine().trim();
             
-            if (!tickerAtivo.isEmpty()) {
-                ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
+            if (!tickerOuNome.isEmpty()) {
+                ativo = AtivoDAO.pesquisarAtivo(tickerOuNome);
 
                 if (ativo == null) {
                     System.out.println("\nAtivo não encontrado.");
                 } else {
                     System.out.println(ativo);
-                    OrdemDAO.listarOrdens(tickerAtivo);
+                    OrdemDAO.listarOrdens(ativo.getTicker());
                 }
 
                 concluido = true;
 
             } else {
-                System.out.println("O ticker do ativo precisa ser inserido.");
+                System.out.println("O ticker ou nome do ativo precisa ser inserido.");
             }      
                                 
         } while (!concluido);

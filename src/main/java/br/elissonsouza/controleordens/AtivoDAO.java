@@ -70,17 +70,19 @@ public class AtivoDAO {
         }
     }
 
-    public static Ativo pesquisarAtivo(String tickerAtivo) {
+    public static Ativo pesquisarAtivo(String tickerOuNome) {
+        Ativo ativo = null;
+
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        Ativo ativo = null;
-
+        
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "SELECT * FROM Ativo WHERE ticker = ?";
+            String sql = "SELECT * FROM Ativo WHERE ticker = ? OR LOWER(Nome) = LOWER(?)";
             preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, tickerAtivo.toUpperCase());
+            preparedStatement.setString(1, tickerOuNome.toUpperCase());
+            preparedStatement.setString(2, tickerOuNome);
             resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
