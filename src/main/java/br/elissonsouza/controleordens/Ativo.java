@@ -37,7 +37,7 @@ public class Ativo {
 
     @Override
     public String toString() {
-        return "\n======== " + ticker + " ========" + "\nNome: " + nome + "\nQuantidade: "+ quantidade
+        return "\n========= " + ticker + " =========" + "\nNome: " + nome + "\nQuantidade: "+ quantidade
         + "\nPreço médio: R$ " + precoMedio + "\nTotal atual: R$ " + quantidade * precoMedio + "\nSaldo de vendas: R$ " + saldoVendas;
     }
 }

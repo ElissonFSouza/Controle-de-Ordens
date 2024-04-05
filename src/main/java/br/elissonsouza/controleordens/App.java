@@ -7,51 +7,40 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class App {
+    static Scanner entrada = new Scanner(System.in);
     public static void main(String[] args) throws Exception {
         final int OPCAO_CADASTRAR_COMPRA = 1;
         final int OPCAO_CADASTRAR_VENDA = 2;
         final int OPCAO_LISTAR_ATIVOS = 3;
-        final int OPCAO_EXIBIR_INFO_ATIVO = 4;
+        final int OPCAO_EXIBIR_ORDENS_ATIVO = 4;
         final int OPCAO_ENCERRAR_SISTEMA = 5;
 
-        Scanner entrada = new Scanner(System.in);
-        int menu = 0;
+        int opcao;
 
         do {
-            boolean concluido = false;
-            do {
-                try {
-                    exibirMenu();                    
-                    menu = entrada.nextInt();
-                    concluido = true;
-
-                } catch (InputMismatchException e) {
-                    System.err.println("\nDigite o número correspondente à opção desejada.");
-                    entrada.next(); // Consumir nova linha pendente
-                }
-            } while (!concluido);
+            opcao = escolherOpcaoMenu(1);
 
             entrada.nextLine(); // Consumir nova linha pendente
 
-            switch (menu) {
+            switch (opcao) {
                 case OPCAO_CADASTRAR_COMPRA:
-                    cadastrarOrdem("Compra", entrada);
+                    cadastrarOrdem("Compra");
                     break;
 
                 case OPCAO_CADASTRAR_VENDA:
-                    cadastrarOrdem("Venda", entrada);
+                    cadastrarOrdem("Venda");
                     break;
 
                 case OPCAO_LISTAR_ATIVOS:
                     AtivoDAO.listarAtivos();
                     break;
 
-                case OPCAO_EXIBIR_INFO_ATIVO:
-                    exibirOrdensAtivo(entrada);
+                case OPCAO_EXIBIR_ORDENS_ATIVO:
+                    listarOrdensAtivo();
                     break;
 
                 case OPCAO_ENCERRAR_SISTEMA:
-                    encerrarSistema(entrada);
+                    encerrarSistema();
                     break;
             
                 default:
@@ -59,13 +48,13 @@ public class App {
                     System.out.println("Digite o número correspondente à opção desejada.");
             } 
                     
-        } while (menu != OPCAO_ENCERRAR_SISTEMA);        
+        } while (opcao != OPCAO_ENCERRAR_SISTEMA);        
     }
     
-    private static void cadastrarOrdem(String tipo, Scanner entrada) {       
-        System.out.println("\n====== Cadastrar ordem de " + tipo.toLowerCase() + " ======");
+    private static void cadastrarOrdem(String tipo) {       
+        System.out.println("\n==== Cadastrar ordem de " + tipo.toLowerCase() + " ====");
 
-        String tickerAtivo = lerTickerAtivo(entrada);
+        String tickerAtivo = lerTickerOuNome("Ticker ou nome");
 
         Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
 
@@ -75,17 +64,17 @@ public class App {
         }
 
         String nomeAtivo = null;
-        if (ativo == null) nomeAtivo = lerNomeAtivo(entrada);        
+        if (ativo == null) nomeAtivo = lerTickerOuNome("Nome");        
 
-        Date dataOrdem = lerDataOrdem(entrada, tipo);   
+        Date dataOrdem = lerDataOrdem(tipo);   
 
-        float quantidade = lerQuantidade(entrada);
+        float quantidade = lerQuantidade();
         if (tipo.equals("Venda") && quantidade > ativo.getQuantidade()) {
             System.out.println("\nNão é possível vender uma quantidade maior do que a quantidade em posse.");
             return;
         }
 
-        float preco = lerPreco(entrada);
+        float preco = lerPreco();
         
         Ordem ordem;
         if (tipo.equals("Compra")) {
@@ -97,37 +86,84 @@ public class App {
         OrdemDAO.inserirOrdem(ordem, ativo, nomeAtivo);
     }
 
-    private static void exibirOrdensAtivo(Scanner entrada) {
-        Ativo ativo;
-        String tickerOuNome;
-        
-        Boolean concluido = false;
-        do {
-            System.out.print("Ticker ou nome do ativo: ");
-            tickerOuNome = entrada.nextLine().trim();
-            
-            if (!tickerOuNome.isEmpty()) {
-                ativo = AtivoDAO.pesquisarAtivo(tickerOuNome);
+    private static void listarOrdensAtivo() {
+        System.out.println("");
 
-                if (ativo == null) {
-                    System.out.println("\nAtivo não encontrado.");
-                } else {
-                    System.out.println(ativo);
-                    OrdemDAO.listarOrdens(ativo.getTicker());
-                }
+        String tickerAtivo = lerTickerOuNome("Ticker");
 
-                concluido = true;
+        Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
 
-            } else {
-                System.out.println("O ticker ou nome do ativo precisa ser inserido.");
-            }      
-                                
-        } while (!concluido);
+        if (ativo == null) {
+            System.out.println("\nAtivo não encontrado.");
+        } else {
+            apresentarOpcoesBusca(ativo);            
+        }
     }
 
-    private static void exibirMenu() {
+    private static void apresentarOpcoesBusca(Ativo ativo) {
+        final int OPCAO_VER_TUDO = 1;
+        final int OPCAO_FILTRAR_MES = 2;
+        final int OPCAO_CANCELAR = 3;
+
+        String tickerAtivo = ativo.getTicker();
+
+        int opcao;
+
+        do {
+            opcao = escolherOpcaoMenu(2);
+
+            entrada.nextLine(); // Consumir nova linha pendente
+
+            switch (opcao) {
+                case OPCAO_VER_TUDO:
+                    System.out.println(ativo);
+                    OrdemDAO.listarOrdens(tickerAtivo, null);
+                    break;
+
+                case OPCAO_FILTRAR_MES:
+                    String mes = lerMes();
+                    System.out.println(ativo);                    
+                    OrdemDAO.listarOrdens(tickerAtivo, mes);
+                    break;
+
+                case OPCAO_CANCELAR:                    
+                    break;
+            
+                default:
+                    System.out.println("\nOpção inválida.");
+                    System.out.println("Digite o número correspondente à opção desejada.");
+            } 
+                    
+        } while (opcao < 1 || opcao > 3);
+    }
+
+    private static int escolherOpcaoMenu(int menu) {
+        int opcao = 0;
+
+        boolean concluido = false;
+        do {
+            try {
+                if (menu == 1) {
+                    exibirMenuPrincipal();
+                } else if (menu == 2) {
+                    exibirMenuBuscaOrdens();
+                }   
+
+                opcao = entrada.nextInt();
+                concluido = true;
+
+            } catch (InputMismatchException e) {
+                System.err.println("\nInsira o número correspondente à opção desejada.");
+                entrada.next(); // Consumir nova linha pendente
+            }
+        } while (!concluido);
+
+        return opcao;
+    }
+
+    private static void exibirMenuPrincipal() {
         System.out.println("\n========== Menu Principal ==========");
-        System.out.println("\n1 - Cadastrar ordem de compra");
+        System.out.println("1 - Cadastrar ordem de compra");
         System.out.println("2 - Cadastrar ordem de venda");
         System.out.println("3 - Exibir lista de ativos");
         System.out.println("4 - Exibir ordens de um ativo");
@@ -135,69 +171,58 @@ public class App {
         System.out.print("> ");
     }
    
-    private static void encerrarSistema(Scanner entrada) {
+    private static void exibirMenuBuscaOrdens() {
+        System.out.println("\n==== Selecionar modo de busca ====");
+        System.out.println("1 - Ver todas as ordens");
+        System.out.println("2 - Filtrar ordens por mês");
+        System.out.println("3 - Cancelar");
+        System.out.print("> ");
+    }
+
+    private static void encerrarSistema() {
         entrada.close();
         Database.getInstance().closeConnection();                    
         System.out.println("\nSistema encerrado.\n");
     }
 
-    private static String lerTickerAtivo(Scanner entrada) {
-        String tickerAtivo;
+    private static String lerTickerOuNome(String str) {
+        String tickerOuNome;
 
         boolean concluido = false;
         do {
-            System.out.print("Ticker do ativo: ");
-            tickerAtivo = entrada.nextLine().trim().toUpperCase();            
+            System.out.print(str + " do ativo: ");
+            tickerOuNome = entrada.nextLine().trim();            
 
-            if (!tickerAtivo.isEmpty()) {
+            if (!tickerOuNome.isEmpty()) {
                 concluido = true;
             } else {
-                System.out.println("O ticker do ativo precisa ser inserido.");
+                System.out.println(str + " do ativo precisa ser inserido.");
             }
             
         } while (!concluido);
 
-        return tickerAtivo;
+        return tickerOuNome;
     }
 
-    private static String lerNomeAtivo(Scanner entrada) {
-        String nomeAtivo;
-
-        boolean concluido = false;
-        do {
-            System.out.print("Nome do ativo: ");
-            nomeAtivo = entrada.nextLine().trim();
-
-            if (!nomeAtivo.isEmpty()) {
-                concluido = true;
-            } else {
-                System.out.println("O nome do ativo precisa ser inserido.");
-            }
-
-        } while (!concluido);
-
-        return nomeAtivo;
-    }
-
-    private static Date lerDataOrdem(Scanner entrada, String tipo) {
+    private static Date lerDataOrdem(String tipo) {
         final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         Date dataOrdem = null;
 
         boolean concluido = false;
         do {
             try {
-                System.out.print("Data da " + tipo.toLowerCase() + ": ");
+                System.out.print("Data da " + tipo.toLowerCase() + " (dd/mm/aaaa): ");
                 dataOrdem = sdf.parse(entrada.nextLine());
                 concluido = true;
             } catch (ParseException e) {
-                System.err.println("A data precisa ser inserida no formato DD/MM/AAAA.");
+                System.err.println("A data precisa ser inserida no formato dd/mm/aaaa.");
             }
         } while (!concluido);
 
         return dataOrdem;
     }
 
-    private static float lerQuantidade(Scanner entrada) {
+    private static float lerQuantidade() {
         float quantidade = 0;
 
         boolean concluido = false;
@@ -214,7 +239,7 @@ public class App {
         return quantidade;
     }
 
-    private static float lerPreco(Scanner entrada) {
+    private static float lerPreco() {
         float preco = 0;
 
         boolean concluido = false;
@@ -229,5 +254,30 @@ public class App {
         } while (!concluido);
 
         return preco;
+    }
+
+    private static String lerMes() {
+        String mesString = null;
+
+        boolean concluido = false;
+        do {
+            try {
+                System.out.print("Mês: ");
+                int mes = entrada.nextInt();
+
+                if (mes >= 1 && mes <= 12) {
+                    mesString = String.format("%02d", mes);
+                    concluido = true;
+                } else {
+                    throw new NumberFormatException();
+                }
+
+            } catch (NumberFormatException e) {
+                System.err.println("Insira o número corespondente ao mês desejado.");
+            }
+
+        } while (!concluido);
+
+        return mesString;
     }
 }

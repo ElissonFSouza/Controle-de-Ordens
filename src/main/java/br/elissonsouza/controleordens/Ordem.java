@@ -17,7 +17,7 @@ public class Ordem {
         this.quantidade = quantidade;
         this.preco = preco;
         this.tipo = tipo;
-        this.tickerAtivo = tickerAtivo;
+        this.tickerAtivo = tickerAtivo.toUpperCase();
     }
         
     public Date getDataOrdem() {

@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class OrdemDAO {
-    static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     
     public static void inserirOrdem(Ordem ordem, Ativo ativo, String nomeAtivo) {  
         float precoMedioAtivo = 0;
@@ -51,46 +51,59 @@ public class OrdemDAO {
         }
     }
 
-    public static void listarOrdens(String tickerAtivo) {
+    public static void listarOrdens(String tickerAtivo, String mes) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-
+        String sql = "";
         Ordem ordem;
 
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "SELECT * FROM Ordem WHERE tickerAtivo = ?";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, tickerAtivo);
+
+            if (mes == null) {
+                sql = "SELECT * FROM Ordem WHERE tickerAtivo = ?";
+                preparedStatement = connection.prepareStatement(sql);
+            } else {
+                sql = "SELECT * FROM Ordem WHERE tickerAtivo = ? AND strftime('%m', dataOrdem) = ?";
+                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setString(2, mes);
+            }            
+            
+            preparedStatement.setString(1, tickerAtivo.toUpperCase());
             resultSet = preparedStatement.executeQuery();
             
-            System.out.println("\n===> Lista de Ordens");
+            System.out.println("\n===> Lista de Ordens:");
 
-            while (resultSet.next()) {
-                Date data = null;
-                try {
-                    data = sdf.parse(resultSet.getString("dataOrdem"));
-                } catch (ParseException e) {
-                    System.err.println("\nHouve um erro ao coletar a data da ordem: " + e.getMessage());
+            if (!resultSet.isBeforeFirst()) { // Verifica se existem linhas no resultado da busca
+                System.out.println("\nNão foram encontradas ordens para o período solicitado.");
+
+            } else {
+                while (resultSet.next()) {
+                    Date data = null;
+                    try {
+                        data = sdf.parse(resultSet.getString("dataOrdem"));
+                    } catch (ParseException e) {
+                        System.err.println("\nHouve um erro ao coletar a data da ordem: " + e.getMessage());
+                    }
+    
+                    float quantidade = resultSet.getFloat("quantidade");
+                    float preco = resultSet.getFloat("preco");
+                    String tipo = resultSet.getString("tipo");
+                    float custo = resultSet.getFloat("custo");
+    
+                    if (tipo.equals("Compra")) {
+                        ordem = new Ordem(data, quantidade, preco, tipo, tickerAtivo);
+                    } else {
+                        ordem = new OrdemVenda(data, quantidade, preco, custo, tickerAtivo);
+                    }
+                    
+                    System.out.println(ordem);
                 }
-
-                float quantidade = resultSet.getFloat("quantidade");
-                float preco = resultSet.getFloat("preco");
-                String tipo = resultSet.getString("tipo");
-                float custo = resultSet.getFloat("custo");
-
-                if (tipo.equals("Compra")) {
-                    ordem = new Ordem(data, quantidade, preco, tipo, tickerAtivo);
-                } else {
-                    ordem = new OrdemVenda(data, quantidade, preco, custo, tickerAtivo);
-                }
-                
-                System.out.println(ordem);
             }
 
         } catch (SQLException e) {
-            System.err.println("\nHouve um erro ao listar os ativos: " + e.getMessage());
+            System.err.println("\nHouve um erro ao listar as ordens: " + e.getMessage());
 
         } finally {
             encerrarRecursos(resultSet, preparedStatement);

@@ -39,7 +39,7 @@ public class AtivoDAO {
         float precoOrdem = ordem.getPreco();
         float totalOrdem = quantidadeOrdem * precoOrdem;
         
-        // Atualizar dados do ativo
+        // Atualizar dados do ativo de acordo com o tipo de ordem
         if (ordem.getTipo().equals("Compra")) { 
             quantidadeAtivo += quantidadeOrdem;
             precoMedioAtivo = (totalAtivo + totalOrdem) / quantidadeAtivo;
