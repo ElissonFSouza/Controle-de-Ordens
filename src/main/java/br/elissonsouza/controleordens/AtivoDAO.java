@@ -6,25 +6,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class AtivoDAO {
+    private static final String INSERT_ATIVO =
+        "INSERT INTO Ativo (ticker, nome, quantidade, precoMedio, saldoVendas) VALUES (?, ?, ?, ?, 0)";
+    private static final String UPDATE_ATIVO =
+        "UPDATE Ativo SET quantidade = ?, precoMedio = ?, saldoVendas = ? WHERE ticker = ?";
+    private static final String PESQUISAR_ATIVO =
+        "SELECT * FROM Ativo WHERE ticker = ? OR LOWER(Nome) = LOWER(?)";
+    private static final String LISTAR_ATIVOS =
+        "SELECT * FROM Ativo";
+
     public static void inserirAtivo(Ordem ordem, String nomeAtivo) {        
         Connection connection = null;
-        PreparedStatement preparedStatement = null;
 
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "INSERT INTO Ativo (ticker, nome, quantidade, precoMedio, saldoVendas) VALUES (?, ?, ?, ?, 0)";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, ordem.getTickerAtivo());
-            preparedStatement.setString(2, nomeAtivo);
-            preparedStatement.setFloat(3, ordem.getQuantidade());
-            preparedStatement.setFloat(4, ordem.getPreco());
-            preparedStatement.executeUpdate();
+            
+            try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ATIVO)) {
+                preparedStatement.setString(1, ordem.getTickerAtivo());
+                preparedStatement.setString(2, nomeAtivo);
+                preparedStatement.setFloat(3, ordem.getQuantidade());
+                preparedStatement.setFloat(4, ordem.getPreco());
+                preparedStatement.executeUpdate();
+            }         
 
         } catch (SQLException e) {
             System.err.println("\nHouve um erro ao inserir as informações no banco de dados: " + e.getMessage());
-
-        } finally {
-            encerrarRecursos(null, preparedStatement);
         }
     }
 
@@ -50,23 +56,20 @@ public class AtivoDAO {
         }        
 
         Connection connection = null;
-        PreparedStatement preparedStatement = null;
 
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "UPDATE Ativo SET quantidade = ?, precoMedio = ?, saldoVendas = ? WHERE ticker = ?";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setFloat(1, quantidadeAtivo);
-            preparedStatement.setFloat(2, precoMedioAtivo);
-            preparedStatement.setFloat(3, saldoVendasAtivo);
-            preparedStatement.setString(4, ativo.getTicker());
-            preparedStatement.executeUpdate();
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_ATIVO)) {
+                preparedStatement.setFloat(1, quantidadeAtivo);
+                preparedStatement.setFloat(2, precoMedioAtivo);
+                preparedStatement.setFloat(3, saldoVendasAtivo);
+                preparedStatement.setString(4, ativo.getTicker());
+                preparedStatement.executeUpdate();
+            }            
 
         } catch (SQLException e) {
             System.err.println("\nHouve um erro ao inserir as informações no banco de dados: " + e.getMessage());
-
-        } finally {
-            encerrarRecursos(null, preparedStatement);
         }
     }
 
@@ -74,32 +77,29 @@ public class AtivoDAO {
         Ativo ativo = null;
 
         Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
         
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "SELECT * FROM Ativo WHERE ticker = ? OR LOWER(Nome) = LOWER(?)";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, tickerOuNome.toUpperCase());
-            preparedStatement.setString(2, tickerOuNome);
-            resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
-                String ticker = resultSet.getString("ticker");
-                String nome = resultSet.getString("nome");
-                float quantidade = resultSet.getFloat("quantidade");
-                float precoMedio = resultSet.getFloat("precoMedio");
-                float saldoVendas = resultSet.getFloat("saldoVendas");
+            try (PreparedStatement preparedStatement = connection.prepareStatement(PESQUISAR_ATIVO)) {
+                preparedStatement.setString(1, tickerOuNome.toUpperCase());
+                preparedStatement.setString(2, tickerOuNome);
 
-                ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
-            }
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        String ticker = resultSet.getString("ticker");
+                        String nome = resultSet.getString("nome");
+                        float quantidade = resultSet.getFloat("quantidade");
+                        float precoMedio = resultSet.getFloat("precoMedio");
+                        float saldoVendas = resultSet.getFloat("saldoVendas");
+        
+                        ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
+                    }
+                }   
+            }            
 
         } catch (SQLException e) {
             System.err.println("\nHouve um erro ao pesquisar o ativo: " + e.getMessage());
-
-        } finally {
-            encerrarRecursos(resultSet, preparedStatement);
         }
 
         return ativo;
@@ -107,64 +107,34 @@ public class AtivoDAO {
 
     public static void listarAtivos() {
         Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
 
         try {
-            connection = Database.getInstance().getConnection();            
-            String sql = "SELECT * FROM Ativo";
-            preparedStatement = connection.prepareStatement(sql);
-            resultSet = preparedStatement.executeQuery();
-            
-            if (!resultSet.isBeforeFirst()) { // Verifica se existem linhas no resultado da busca
-                System.out.println("\nNão há ativos na carteira.");
+            connection = Database.getInstance().getConnection();  
 
-            } else {
-                System.out.println("\n========= Lista de ativos ==========");
-
-                while (resultSet.next()) {
-                    String ticker = resultSet.getString("ticker");
-                    String nome = resultSet.getString("nome");
-                    float quantidade = resultSet.getFloat("quantidade");
-                    float precoMedio = resultSet.getFloat("precoMedio");
-                    float saldoVendas = resultSet.getFloat("saldoVendas");
-
-                    Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
-                    System.out.println(ativo);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(LISTAR_ATIVOS)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (!resultSet.isBeforeFirst()) { // Verifica se existem linhas no resultado da busca
+                        System.out.println("\nNão há ativos na carteira.");
+        
+                    } else {
+                        System.out.println("\n========= Lista de ativos ==========");
+        
+                        while (resultSet.next()) {
+                            String ticker = resultSet.getString("ticker");
+                            String nome = resultSet.getString("nome");
+                            float quantidade = resultSet.getFloat("quantidade");
+                            float precoMedio = resultSet.getFloat("precoMedio");
+                            float saldoVendas = resultSet.getFloat("saldoVendas");
+        
+                            Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
+                            System.out.println(ativo);
+                        }
+                    }
                 }
-            }
+            }            
 
         } catch (SQLException e) {
             System.err.println("\nHouve um erro ao listar os ativos: " + e.getMessage());
-
-        } finally {
-            encerrarRecursos(resultSet, preparedStatement);
         }
-    }
-
-    private static void encerrarRecursos(ResultSet resultSet, PreparedStatement preparedStatement) {
-        if (resultSet != null) {
-            try {
-                resultSet.close();
-            } catch (SQLException e) {
-                System.err.println("\nHouve um erro ao encerrar o resultado da consulta: " + e.getMessage());
-            }
-        }
-
-        if (preparedStatement != null) {
-            try {
-                preparedStatement.close();
-            } catch (SQLException e) {
-                System.err.println("\nHouve um erro ao encerrar a consulta: " + e.getMessage());
-            }
-        }
-
-        // if (connection != null) {
-        //     try {
-        //         connection.close();
-        //     } catch (SQLException e) {
-        //         System.err.println("\nHouve um erro ao encerrar conexão com o banco de dados: " + e.getMessage());
-        //     }
-        // }
     }
 }

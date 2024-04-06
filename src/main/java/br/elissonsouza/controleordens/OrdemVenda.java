@@ -1,11 +1,11 @@
 package br.elissonsouza.controleordens;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class OrdemVenda extends Ordem {
     private final float custo;
 
-    public OrdemVenda(Date data, float quantidade, float preco, float custo, String tickerAtivo) {
+    public OrdemVenda(LocalDate data, float quantidade, float preco, float custo, String tickerAtivo) {
         super(data, quantidade, preco, "Venda", tickerAtivo);
         this.custo = custo;
     }

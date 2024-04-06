@@ -1,13 +1,13 @@
 package br.elissonsouza.controleordens;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class App {
-    static Scanner entrada = new Scanner(System.in);
+    private static Scanner entrada = new Scanner(System.in);
+    
     public static void main(String[] args) throws Exception {
         final int OPCAO_CADASTRAR_COMPRA = 1;
         final int OPCAO_CADASTRAR_VENDA = 2;
@@ -54,7 +54,7 @@ public class App {
     private static void cadastrarOrdem(String tipo) {       
         System.out.println("\n==== Cadastrar ordem de " + tipo.toLowerCase() + " ====");
 
-        String tickerAtivo = lerTickerOuNome("Ticker ou nome");
+        String tickerAtivo = lerTickerOuNome("Ticker");
 
         Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
 
@@ -64,9 +64,15 @@ public class App {
         }
 
         String nomeAtivo = null;
-        if (ativo == null) nomeAtivo = lerTickerOuNome("Nome");        
+        float precoMedio = 0;
 
-        Date dataOrdem = lerDataOrdem(tipo);   
+        if (ativo == null) {
+            nomeAtivo = lerTickerOuNome("Nome");   
+        } else {
+            precoMedio = ativo.getPrecoMedio();
+        }
+
+        LocalDate dataOrdem = lerDataOrdem(tipo);   
 
         float quantidade = lerQuantidade();
         if (tipo.equals("Venda") && quantidade > ativo.getQuantidade()) {
@@ -76,26 +82,21 @@ public class App {
 
         float preco = lerPreco();
         
-        Ordem ordem;
-        if (tipo.equals("Compra")) {
-            ordem = new Ordem(dataOrdem, quantidade, preco, tipo, tickerAtivo);
-        } else {
-            ordem = new OrdemVenda(dataOrdem, quantidade, preco, quantidade * ativo.getPrecoMedio(), tickerAtivo);
-        }
-        
+        Ordem ordem = OrdemDAO.criarOrdem(tipo, dataOrdem, quantidade, preco, quantidade * precoMedio, tickerAtivo);        
         OrdemDAO.inserirOrdem(ordem, ativo, nomeAtivo);
     }
 
     private static void listarOrdensAtivo() {
         System.out.println("");
 
-        String tickerAtivo = lerTickerOuNome("Ticker");
+        String tickerOuNome = lerTickerOuNome("Ticker ou nome");
 
-        Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
+        Ativo ativo = AtivoDAO.pesquisarAtivo(tickerOuNome);
 
         if (ativo == null) {
             System.out.println("\nAtivo não encontrado.");
         } else {
+            System.out.println(ativo);
             apresentarOpcoesBusca(ativo);            
         }
     }
@@ -116,14 +117,12 @@ public class App {
 
             switch (opcao) {
                 case OPCAO_VER_TUDO:
-                    System.out.println(ativo);
-                    OrdemDAO.listarOrdens(tickerAtivo, null);
+                    OrdemDAO.listarOrdens(tickerAtivo);
                     break;
 
                 case OPCAO_FILTRAR_MES:
-                    String mes = lerMes();
-                    System.out.println(ativo);                    
-                    OrdemDAO.listarOrdens(tickerAtivo, mes);
+                    String ano = lerAno();                                       
+                    OrdemDAO.listarOrdensAno(tickerAtivo, ano);
                     break;
 
                 case OPCAO_CANCELAR:                    
@@ -146,7 +145,7 @@ public class App {
                 if (menu == 1) {
                     exibirMenuPrincipal();
                 } else if (menu == 2) {
-                    exibirMenuBuscaOrdens();
+                    exibirMenuBuscarOrdens();
                 }   
 
                 opcao = entrada.nextInt();
@@ -171,10 +170,10 @@ public class App {
         System.out.print("> ");
     }
    
-    private static void exibirMenuBuscaOrdens() {
+    private static void exibirMenuBuscarOrdens() {
         System.out.println("\n==== Selecionar modo de busca ====");
-        System.out.println("1 - Ver todas as ordens");
-        System.out.println("2 - Filtrar ordens por mês");
+        System.out.println("1 - Listar todas as ordens");
+        System.out.println("2 - Filtrar ordens por ano");
         System.out.println("3 - Cancelar");
         System.out.print("> ");
     }
@@ -204,19 +203,18 @@ public class App {
         return tickerOuNome;
     }
 
-    private static Date lerDataOrdem(String tipo) {
-        final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        Date dataOrdem = null;
+    private static LocalDate lerDataOrdem(String tipo) {
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate dataOrdem = null;
 
         boolean concluido = false;
         do {
-            try {
-                System.out.print("Data da " + tipo.toLowerCase() + " (dd/mm/aaaa): ");
-                dataOrdem = sdf.parse(entrada.nextLine());
-                concluido = true;
-            } catch (ParseException e) {
-                System.err.println("A data precisa ser inserida no formato dd/mm/aaaa.");
-            }
+            System.out.print("Data da " + tipo.toLowerCase() + " (dd/mm/aaaa): ");
+
+            dataOrdem = LocalDate.parse(entrada.nextLine(), formatter);
+            
+            concluido = true;
+
         } while (!concluido);
 
         return dataOrdem;
@@ -245,7 +243,7 @@ public class App {
         boolean concluido = false;
         do {
             try {
-                System.out.print("Preço: ");
+                System.out.print("Preço: R$ ");
                 preco = Float.parseFloat(entrada.nextLine());
                 concluido = true;
             } catch (NumberFormatException e) {
@@ -256,28 +254,24 @@ public class App {
         return preco;
     }
 
-    private static String lerMes() {
-        String mesString = null;
+    private static String lerAno() {
+        String anoString = null;
 
         boolean concluido = false;
         do {
             try {
-                System.out.print("Mês: ");
-                int mes = entrada.nextInt();
+                System.out.print("\nAno: ");
+                int ano = entrada.nextInt();
 
-                if (mes >= 1 && mes <= 12) {
-                    mesString = String.format("%02d", mes);
-                    concluido = true;
-                } else {
-                    throw new NumberFormatException();
-                }
+                anoString = String.format("%04d", ano);
+                concluido = true;
 
             } catch (NumberFormatException e) {
-                System.err.println("Insira o número corespondente ao mês desejado.");
+                System.err.println("Insira o ano no formato correto.");
             }
 
         } while (!concluido);
 
-        return mesString;
+        return anoString;
     }
 }
