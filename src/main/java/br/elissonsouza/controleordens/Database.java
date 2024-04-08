@@ -14,7 +14,7 @@ public class Database {
             connection = DriverManager.getConnection("jdbc:sqlite:controle-ordens/src/main/resources/dados.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
-            String sql = FileUtils.loadTextFile("controle-ordens/src/main/resources/descricao.sql");
+            String sql = FileUtils.loadTextFile("controle-ordens/src/main/resources/inicializacao.sql");
             statement.executeUpdate(sql);
 
         } catch (Exception e) {

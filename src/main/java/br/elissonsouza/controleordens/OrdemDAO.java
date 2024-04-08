@@ -4,12 +4,22 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class OrdemDAO {
-    static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    private static final String SELECT_ORDENS_ANO = 
+        "SELECT * FROM Ordem WHERE tickerAtivo = ? AND strftime('%Y', dataOrdem) = ? LIMIT 1";
+    private static final String SELECT_ORDENS_MES =
+        "SELECT * FROM Ordem WHERE tickerAtivo = ? AND strftime('%Y', dataOrdem) = ? AND strftime('%m', dataOrdem) = ? ORDER BY dataOrdem";
+    private static final String SELECT_ORDENS = 
+        "SELECT * FROM Ordem WHERE tickerAtivo = ? ORDER BY dataOrdem";
+    private static final String INSERT_ORDEM_COMPRA =
+        "INSERT INTO Ordem (dataOrdem, quantidade, preco, tipo, tickerAtivo) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_ORDEM_VENDA =
+        "INSERT INTO Ordem (dataOrdem, quantidade, preco, tipo, custo, tickerAtivo) VALUES (?, ?, ?, ?, ?, ?)";
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
     public static void inserirOrdem(Ordem ordem, Ativo ativo, String nomeAtivo) {  
         float precoMedioAtivo = 0;
@@ -17,7 +27,7 @@ public class OrdemDAO {
         if (ativo == null) {
             AtivoDAO.inserirAtivo(ordem, nomeAtivo); // Inserir o ativo se ele ainda não está na carteira
         } else {
-            precoMedioAtivo = ativo.getPrecoMedio(); // Obter preço médio do ativo antes da atuaização
+            precoMedioAtivo = ativo.getPrecoMedio(); // Obter preço médio do ativo antes da atualização
             AtivoDAO.atualizarAtivo(ordem, ativo); // Atualizar o ativo se ele já está na carteira
         }
         
@@ -28,16 +38,16 @@ public class OrdemDAO {
             connection = Database.getInstance().getConnection();
 
             if (ordem.getTipo().equals("Compra")) {
-                String sql = "INSERT INTO Ordem (dataOrdem, quantidade, preco, tipo, tickerAtivo) VALUES (?, ?, ?, ?, ?)";
-                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement = connection.prepareStatement(INSERT_ORDEM_COMPRA);
                 preparedStatement.setString(5, ordem.getTickerAtivo());
+                                
             } else {
-                String sql = "INSERT INTO Ordem (dataOrdem, quantidade, preco, tipo, custo, tickerAtivo) VALUES (?, ?, ?, ?, ?, ?)";
-                preparedStatement = connection.prepareStatement(sql);
+                preparedStatement = connection.prepareStatement(INSERT_ORDEM_VENDA);
                 preparedStatement.setFloat(5, ordem.getQuantidade() * precoMedioAtivo);
-                preparedStatement.setString(6, ordem.getTickerAtivo());
-            }          
-            preparedStatement.setString(1, sdf.format(ordem.getDataOrdem()));
+                preparedStatement.setString(6, ordem.getTickerAtivo());                               
+            }     
+
+            preparedStatement.setString(1, ordem.getDataOrdem().format(formatter));
             preparedStatement.setFloat(2, ordem.getQuantidade());
             preparedStatement.setFloat(3, ordem.getPreco());
             preparedStatement.setString(4, ordem.getTipo());
@@ -47,79 +57,115 @@ public class OrdemDAO {
             System.err.println("\nHouve um erro ao inserir informações no banco de dados: " + e.getMessage());
 
         } finally {
-            encerrarRecursos(null, preparedStatement);
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    System.err.println("\nHouve um erro ao encerrar a consulta: " + e.getMessage());
+                }
+            }
         }
     }
 
     public static void listarOrdens(String tickerAtivo) {
         Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
-
-        Ordem ordem;
 
         try {
             connection = Database.getInstance().getConnection();
-            String sql = "SELECT * FROM Ordem WHERE tickerAtivo = ?";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, tickerAtivo);
-            resultSet = preparedStatement.executeQuery();
-            
-            System.out.println("\n===> Lista de Ordens");
 
-            while (resultSet.next()) {
-                Date data = null;
-                try {
-                    data = sdf.parse(resultSet.getString("dataOrdem"));
-                } catch (ParseException e) {
-                    System.err.println("\nHouve um erro ao coletar a data da ordem: " + e.getMessage());
-                }
-
-                float quantidade = resultSet.getFloat("quantidade");
-                float preco = resultSet.getFloat("preco");
-                String tipo = resultSet.getString("tipo");
-                float custo = resultSet.getFloat("custo");
-
-                if (tipo.equals("Compra")) {
-                    ordem = new Ordem(data, quantidade, preco, tipo, tickerAtivo);
-                } else {
-                    ordem = new OrdemVenda(data, quantidade, preco, custo, tickerAtivo);
-                }
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ORDENS)) {
+                preparedStatement.setString(1, tickerAtivo.toUpperCase());
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    System.out.println("\n===== Lista de Ordens =====");
                 
-                System.out.println(ordem);
-            }
-
+                    while (resultSet.next()) {    
+                        float quantidade = resultSet.getFloat("quantidade");
+                        float preco = resultSet.getFloat("preco");
+                        String tipo = resultSet.getString("tipo");
+                        float custo = resultSet.getFloat("custo");
+                        LocalDate data = LocalDate.parse(resultSet.getString("dataOrdem"), formatter); 
+        
+                        Ordem ordem = criarOrdem(tipo, data, quantidade, preco, custo, tickerAtivo);                
+                        System.out.println(ordem);
+                    }
+                }
+            }           
+                
         } catch (SQLException e) {
-            System.err.println("\nHouve um erro ao listar os ativos: " + e.getMessage());
-
-        } finally {
-            encerrarRecursos(resultSet, preparedStatement);
+            System.err.println("\nHouve um erro ao listar as ordens: " + e.getMessage());
         }
     }
 
-    private static void encerrarRecursos(ResultSet resultSet, PreparedStatement preparedStatement) {
-        if (resultSet != null) {
-            try {
-                resultSet.close();
-            } catch (SQLException e) {
-                System.err.println("\nHouve um erro ao encerrar o resultado da consulta: " + e.getMessage());
+    public static void listarOrdensAno(String tickerAtivo, String ano) {
+        try {
+            Connection connection = Database.getInstance().getConnection();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ORDENS_ANO)) {
+                preparedStatement.setString(1, tickerAtivo.toUpperCase());
+                preparedStatement.setString(2, ano);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (!resultSet.isBeforeFirst()) {
+                        System.out.println("\nNão foram encontradas ordens em " + ano + ".");
+                    } else {
+                        System.out.println("\n===== Lista de Ordens =====");
+                        listarOrdensMeses(connection, tickerAtivo, ano);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("\nHouve um erro ao listar as ordens: " + e.getMessage());
+        }
+    }
+    
+    public static void listarOrdensMeses(Connection connection, String tickerAtivo, String ano) throws SQLException {
+        String[] meses = {"Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"};            
+
+        for (int mes = 1; mes <= 12; mes++) {  
+            float totalVendas = 0;
+            float custoTotal = 0;
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ORDENS_MES)) {       
+                preparedStatement.setString(1, tickerAtivo.toUpperCase());
+                preparedStatement.setString(2, ano);
+                preparedStatement.setString(3, String.format("%02d", mes));
+                
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.isBeforeFirst()) { // Verifica se existem linhas no resultado da busca
+                        System.out.println("\n" + meses[mes-1] + " ===================");
+                    } 
+
+                    while (resultSet.next()) {    
+                        float quantidade = resultSet.getFloat("quantidade");
+                        float preco = resultSet.getFloat("preco");
+                        String tipo = resultSet.getString("tipo");
+                        float custo = resultSet.getFloat("custo");
+                        LocalDate dataOrdem = LocalDate.parse(resultSet.getString("dataOrdem"), formatter);
+        
+                        Ordem ordem = criarOrdem(tipo, dataOrdem, quantidade, preco, custo, tickerAtivo);
+                        System.out.println(ordem);
+
+                        if (tipo.equals("Venda")) {
+                            totalVendas += quantidade * preco;
+                            custoTotal += custo;
+                        }
+                    }
+
+                    if (totalVendas > 0) { // Verifica se houve vendas no mês
+                        System.out.println("___________________________");
+                        System.out.println("\nApuração das vendas do mês:");
+                        System.out.println("- Total das vendas: R$ " + totalVendas);
+                        System.out.println("- Custo total: R$ " + custoTotal);
+                    }
+                }
             }
         }
+    }
 
-        if (preparedStatement != null) {
-            try {
-                preparedStatement.close();
-            } catch (SQLException e) {
-                System.err.println("\nHouve um erro ao encerrar a consulta: " + e.getMessage());
-            }
+    public static Ordem criarOrdem(String tipo, LocalDate dataOrdem, float quantidade, float preco, float custo, String tickerAtivo) {
+        if (tipo.equals("Compra")) {
+            return new Ordem(dataOrdem, quantidade, preco, tipo, tickerAtivo);
+        } else {
+            return new OrdemVenda(dataOrdem, quantidade, preco, custo, tickerAtivo);
         }
-
-        // if (connection != null) {
-        //     try {
-        //         connection.close();
-        //     } catch (SQLException e) {
-        //         System.err.println("\nHouve um erro ao encerrar conexão com o banco de dados: " + e.getMessage());
-        //     }
-        // }
     }
 }
