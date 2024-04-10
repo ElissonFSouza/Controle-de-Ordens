@@ -1,21 +1,21 @@
 package br.elissonsouza.controleordens;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 public class Ordem {
     private final LocalDate dataOrdem;
-    private final float quantidade;
-    private final float preco;
+    private final BigDecimal quantidade;
+    private final BigDecimal preco;
+    private final BigDecimal taxa;
     private final String tipo;
     private final String tickerAtivo;
 
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-    public Ordem(LocalDate data, float quantidade, float preco, String tipo, String tickerAtivo) {
+    public Ordem(LocalDate data, BigDecimal quantidade, BigDecimal preco, BigDecimal taxa, String tipo, String tickerAtivo) {
         this.dataOrdem = data;
         this.quantidade = quantidade;
         this.preco = preco;
+        this.taxa = taxa;
         this.tipo = tipo;
         this.tickerAtivo = tickerAtivo.toUpperCase();
     }
@@ -24,12 +24,16 @@ public class Ordem {
         return dataOrdem;
     }
 
-    public float getQuantidade() {
+    public BigDecimal getQuantidade() {
         return quantidade;
     }
 
-    public float getPreco() {
+    public BigDecimal getPreco() {
         return preco;
+    }
+
+    public BigDecimal getTaxa() {
+        return taxa;
     }
 
     public String getTipo() {
@@ -42,6 +46,7 @@ public class Ordem {
 
     @Override
     public String toString() {
-        return "\nData da ordem: " + dataOrdem.format(formatter) + "\nTipo: " + tipo + "\nQuantidade: " + quantidade + "\nPreço: R$ " + preco + "\nTotal da ordem: R$ " + quantidade * preco;
+        return "\nData da ordem: " + dataOrdem.format(App.formatter) + "\nTipo: " + tipo +"\nQuantidade: " + tickerAtivo + " " + quantidade
+               + "\nPreço: R$ " + preco + "\nTaxa: " + tickerAtivo + " " + taxa + "\nTotal da ordem: R$ " + quantidade.multiply(preco);
     }
 }

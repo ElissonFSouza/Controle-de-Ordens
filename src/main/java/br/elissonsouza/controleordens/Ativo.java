@@ -1,13 +1,15 @@
 package br.elissonsouza.controleordens;
 
+import java.math.BigDecimal;
+
 public class Ativo {
     private final String ticker;
     private final String nome;
-    private float quantidade;
-    private float precoMedio; 
-    private float saldoVendas;
+    private BigDecimal quantidade;
+    private BigDecimal precoMedio; 
+    private BigDecimal saldoVendas;
 
-    public Ativo(String ticker, String nome, float quantidade, float precoMedio, float saldoVendas) {
+    public Ativo(String ticker, String nome, BigDecimal quantidade, BigDecimal precoMedio, BigDecimal saldoVendas) {
         this.ticker = ticker;
         this.nome = nome;
         this.quantidade = quantidade;
@@ -23,21 +25,21 @@ public class Ativo {
         return nome;
     }
 
-    public float getQuantidade() {
+    public BigDecimal getQuantidade() {
         return quantidade;
     }
 
-    public float getPrecoMedio() {
+    public BigDecimal getPrecoMedio() {
         return precoMedio;
     }
 
-    public float getSaldoVendas() {
+    public BigDecimal getSaldoVendas() {
         return saldoVendas;
     }
 
     @Override
     public String toString() {
         return "\n========= " + ticker + " =========" + "\nNome: " + nome + "\nQuantidade: "+ quantidade
-        + "\nPreço médio: R$ " + precoMedio + "\nTotal atual: R$ " + quantidade * precoMedio + "\nSaldo de vendas: R$ " + saldoVendas;
+        + "\nPreço médio: R$ " + precoMedio + "\nTotal atual: R$ " + quantidade.multiply(precoMedio) + "\nSaldo de vendas: R$ " + saldoVendas;
     }
 }

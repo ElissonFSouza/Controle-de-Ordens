@@ -1,5 +1,6 @@
 package br.elissonsouza.controleordens;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,8 +25,8 @@ public class AtivoDAO {
             try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ATIVO)) {
                 preparedStatement.setString(1, ordem.getTickerAtivo());
                 preparedStatement.setString(2, nomeAtivo);
-                preparedStatement.setFloat(3, ordem.getQuantidade());
-                preparedStatement.setFloat(4, ordem.getPreco());
+                preparedStatement.setBigDecimal(3, ordem.getQuantidade().subtract(ordem.getTaxa()));
+                preparedStatement.setBigDecimal(4, ordem.getPreco());
                 preparedStatement.executeUpdate();
             }         
 
@@ -36,23 +37,25 @@ public class AtivoDAO {
 
     public static void atualizarAtivo(Ordem ordem, Ativo ativo) {
         // Obter dados atuais do ativo
-        float quantidadeAtivo = ativo.getQuantidade();        
-        float precoMedioAtivo = ativo.getPrecoMedio();
-        float saldoVendasAtivo = ativo.getSaldoVendas();
-        float totalAtivo = quantidadeAtivo * precoMedioAtivo;
+        BigDecimal quantidadeAtivo = ativo.getQuantidade();        
+        BigDecimal precoMedioAtivo = ativo.getPrecoMedio();
+        BigDecimal saldoVendasAtivo = ativo.getSaldoVendas();
+        BigDecimal totalAtivo = quantidadeAtivo.multiply(precoMedioAtivo);
         // Obter dados da ordem atual
-        float quantidadeOrdem = ordem.getQuantidade();
-        float precoOrdem = ordem.getPreco();
-        float totalOrdem = quantidadeOrdem * precoOrdem;
+        BigDecimal quantidadeOrdem = ordem.getQuantidade();
+        BigDecimal precoOrdem = ordem.getPreco();
+        BigDecimal taxaOrdem = ordem.getTaxa();
+        BigDecimal totalOrdem = quantidadeOrdem.multiply(precoOrdem);
         
         // Atualizar dados do ativo de acordo com o tipo de ordem
-        if (ordem.getTipo().equals("Compra")) { 
-            quantidadeAtivo += quantidadeOrdem;
-            precoMedioAtivo = (totalAtivo + totalOrdem) / quantidadeAtivo;
+        if (ordem instanceof OrdemVenda) { 
+            quantidadeAtivo = quantidadeAtivo.subtract(quantidadeOrdem);            
+            saldoVendasAtivo = saldoVendasAtivo.add(totalOrdem.subtract(quantidadeOrdem.multiply(precoMedioAtivo)));
+            if (quantidadeAtivo.equals(BigDecimal.ZERO)) precoMedioAtivo = BigDecimal.ZERO;
+
         } else {
-            quantidadeAtivo -= quantidadeOrdem;            
-            saldoVendasAtivo += totalOrdem - (quantidadeOrdem * precoMedioAtivo);
-            if (quantidadeAtivo == 0) precoMedioAtivo = 0;
+            quantidadeAtivo = quantidadeAtivo.add(quantidadeOrdem.subtract(taxaOrdem));
+            precoMedioAtivo = (totalAtivo.add(totalOrdem)).divide(quantidadeAtivo.add(taxaOrdem));
         }        
 
         Connection connection = null;
@@ -61,9 +64,9 @@ public class AtivoDAO {
             connection = Database.getInstance().getConnection();
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_ATIVO)) {
-                preparedStatement.setFloat(1, quantidadeAtivo);
-                preparedStatement.setFloat(2, precoMedioAtivo);
-                preparedStatement.setFloat(3, saldoVendasAtivo);
+                preparedStatement.setBigDecimal(1, quantidadeAtivo);
+                preparedStatement.setBigDecimal(2, precoMedioAtivo);
+                preparedStatement.setBigDecimal(3, saldoVendasAtivo);
                 preparedStatement.setString(4, ativo.getTicker());
                 preparedStatement.executeUpdate();
             }            
@@ -89,9 +92,9 @@ public class AtivoDAO {
                     if (resultSet.next()) {
                         String ticker = resultSet.getString("ticker");
                         String nome = resultSet.getString("nome");
-                        float quantidade = resultSet.getFloat("quantidade");
-                        float precoMedio = resultSet.getFloat("precoMedio");
-                        float saldoVendas = resultSet.getFloat("saldoVendas");
+                        BigDecimal quantidade = resultSet.getBigDecimal("quantidade");
+                        BigDecimal precoMedio = resultSet.getBigDecimal("precoMedio");
+                        BigDecimal saldoVendas = resultSet.getBigDecimal("saldoVendas");
         
                         ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
                     }
@@ -122,9 +125,9 @@ public class AtivoDAO {
                         while (resultSet.next()) {
                             String ticker = resultSet.getString("ticker");
                             String nome = resultSet.getString("nome");
-                            float quantidade = resultSet.getFloat("quantidade");
-                            float precoMedio = resultSet.getFloat("precoMedio");
-                            float saldoVendas = resultSet.getFloat("saldoVendas");
+                            BigDecimal quantidade = resultSet.getBigDecimal("quantidade");
+                            BigDecimal precoMedio = resultSet.getBigDecimal("precoMedio");
+                            BigDecimal saldoVendas = resultSet.getBigDecimal("saldoVendas");
         
                             Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas);
                             System.out.println(ativo);

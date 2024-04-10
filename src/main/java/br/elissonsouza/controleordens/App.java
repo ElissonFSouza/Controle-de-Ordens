@@ -1,12 +1,15 @@
 package br.elissonsouza.controleordens;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class App {
-    private static Scanner entrada = new Scanner(System.in);
+    private static final Scanner entrada = new Scanner(System.in);
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     
     public static void main(String[] args) throws Exception {
         final int OPCAO_CADASTRAR_COMPRA = 1;
@@ -54,17 +57,18 @@ public class App {
     private static void cadastrarOrdem(String tipo) {       
         System.out.println("\n==== Cadastrar ordem de " + tipo.toLowerCase() + " ====");
 
-        String tickerAtivo = lerTickerOuNome("Ticker");
+        String tickerAtivo = lerTickerOuNome("Ticker").toUpperCase();
 
         Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
 
-        if (tipo.equals("Venda") && (ativo == null || ativo.getQuantidade() == 0)) {
+        if (tipo.equals("Venda") && (ativo == null || ativo.getQuantidade().equals(BigDecimal.ZERO))) {
             System.out.println("\nVocê não possui o ativo informado.");
             return;                                 
         }
 
+        String str = tickerAtivo;
         String nomeAtivo = null;
-        float precoMedio = 0;
+        BigDecimal precoMedio = new BigDecimal(0);
 
         if (ativo == null) {
             nomeAtivo = lerTickerOuNome("Nome");   
@@ -73,16 +77,20 @@ public class App {
         }
 
         LocalDate dataOrdem = lerDataOrdem(tipo);   
+        BigDecimal quantidade = lerBigDecimal("Quantidade: " + tickerAtivo + " ");
 
-        float quantidade = lerQuantidade();
-        if (tipo.equals("Venda") && quantidade > ativo.getQuantidade()) {
-            System.out.println("\nNão é possível vender uma quantidade maior do que a quantidade em posse.");
-            return;
+        if (tipo.equals("Venda")) {
+            str = "R$";
+            if (quantidade.compareTo(ativo.getQuantidade()) > 0) {
+                System.out.println("\nNão é possível vender uma quantidade maior do que a quantidade em posse.");
+                return;
+            }
         }
 
-        float preco = lerPreco();
+        BigDecimal preco = lerBigDecimal("Preço: R$ ");
+        BigDecimal taxa = lerBigDecimal("Taxa: " + str + " ");
         
-        Ordem ordem = OrdemDAO.criarOrdem(tipo, dataOrdem, quantidade, preco, quantidade * precoMedio, tickerAtivo);        
+        Ordem ordem = OrdemDAO.criarOrdem(tipo, dataOrdem, quantidade, preco, taxa, quantidade.multiply(precoMedio), tickerAtivo);        
         OrdemDAO.inserirOrdem(ordem, ativo, nomeAtivo);
     }
 
@@ -211,47 +219,41 @@ public class App {
         do {
             System.out.print("Data da " + tipo.toLowerCase() + " (dd/mm/aaaa): ");
 
-            dataOrdem = LocalDate.parse(entrada.nextLine(), formatter);
-            
-            concluido = true;
+            try {
+                dataOrdem = LocalDate.parse(entrada.nextLine(), formatter);
+                concluido = true;
+            } catch (DateTimeParseException e) {
+                System.err.println("Insira a data no formato correto.");
+            }
 
         } while (!concluido);
 
         return dataOrdem;
     }
 
-    private static float lerQuantidade() {
-        float quantidade = 0;
+    private static BigDecimal lerBigDecimal(String str) {
+        BigDecimal valor = BigDecimal.ZERO;
 
         boolean concluido = false;
         do {
             try {
-                System.out.print("Quantidade: ");
-                quantidade = Float.parseFloat(entrada.nextLine());
+                System.out.print(str);
+
+                String valorString = entrada.nextLine();
+                valorString = valorString.replace(',', '.');
+                valor = new BigDecimal(valorString);
+
+                if (!(valor.compareTo(BigDecimal.ZERO) > 0)) throw new InputMismatchException();
+
                 concluido = true;
-            } catch (NumberFormatException e) {
-                System.err.println("Insira a quantidade no formato correto.");
+
+            } catch (InputMismatchException | NumberFormatException e) {
+                System.err.println("Insira o valor no formato correto.");
             }
+
         } while (!concluido);
 
-        return quantidade;
-    }
-
-    private static float lerPreco() {
-        float preco = 0;
-
-        boolean concluido = false;
-        do {
-            try {
-                System.out.print("Preço: R$ ");
-                preco = Float.parseFloat(entrada.nextLine());
-                concluido = true;
-            } catch (NumberFormatException e) {
-                System.err.println("Insira o preço no formato correto.");
-            }
-        } while (!concluido);
-
-        return preco;
+        return valor;
     }
 
     private static String lerAno() {

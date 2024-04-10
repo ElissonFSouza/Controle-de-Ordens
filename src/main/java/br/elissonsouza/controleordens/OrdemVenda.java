@@ -1,17 +1,25 @@
 package br.elissonsouza.controleordens;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class OrdemVenda extends Ordem {
-    private final float custo;
+    private final BigDecimal custo;
 
-    public OrdemVenda(LocalDate data, float quantidade, float preco, float custo, String tickerAtivo) {
-        super(data, quantidade, preco, "Venda", tickerAtivo);
+    public OrdemVenda(LocalDate data, BigDecimal quantidade, BigDecimal preco, BigDecimal taxa, BigDecimal custo, String tickerAtivo) {
+        super(data, quantidade, preco, taxa, "Venda", tickerAtivo);
         this.custo = custo;
+    }
+
+    public BigDecimal getCusto() {
+        return custo;
     }
 
     @Override
     public String toString() {
-        return super.toString() + "\nCusto: R$ " + custo;
+        return "\nData da ordem: " + super.getDataOrdem().format(App.formatter) + "\nTipo: " + super.getTipo()
+               + "\nQuantidade: " + super.getTickerAtivo() + " " + super.getQuantidade()
+               + "\nPreço: R$ " + super.getPreco() + "\nTaxa: R$ " + super.getTaxa()
+               + "\nTotal da ordem: R$ " + super.getQuantidade().multiply(super.getPreco()) + "\nCusto: R$ " + custo;
     }
 }
