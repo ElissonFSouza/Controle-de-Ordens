@@ -15,7 +15,7 @@ public class Database {
 
     private Database() {
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite::resource:dados.db");
+            connection = DriverManager.getConnection("jdbc:sqlite:Database.db");
 
             String sql = carregarArquivoDeRecurso("inicializacao.sql");
             

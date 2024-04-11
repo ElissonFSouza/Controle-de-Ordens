@@ -1,4 +1,6 @@
+.gitignore
 /target/
 .vscode/
 *.bat
 *.jar
+MyDatabase.db
