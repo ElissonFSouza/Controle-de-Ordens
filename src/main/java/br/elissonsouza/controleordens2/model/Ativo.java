@@ -8,13 +8,15 @@ public class Ativo {
     private BigDecimal quantidade;
     private BigDecimal precoMedio; 
     private BigDecimal saldoVendas;
+    private BigDecimal totalGasto;
 
-    public Ativo(String ticker, String nome, BigDecimal quantidade, BigDecimal precoMedio, BigDecimal saldoVendas) {
+    public Ativo(String ticker, String nome, BigDecimal quantidade, BigDecimal precoMedio, BigDecimal saldoVendas, BigDecimal totalGasto) {
         this.ticker = ticker;
         this.nome = nome;
         this.quantidade = quantidade;
         this.precoMedio = precoMedio;
         this.saldoVendas = saldoVendas;
+        this.totalGasto = totalGasto;
     }
 
     public String getTicker() {
@@ -35,6 +37,10 @@ public class Ativo {
 
     public BigDecimal getSaldoVendas() {
         return saldoVendas;
+    }
+
+    public BigDecimal getTotalGasto() {
+        return totalGasto;
     }
 
     @Override

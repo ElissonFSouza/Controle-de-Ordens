@@ -14,6 +14,7 @@ import br.elissonsouza.controleordens2.model.Ordem;
 import br.elissonsouza.controleordens2.model.OrdemVenda;
 
 public class OrdemDAO {
+    
     private static final String SELECT_ORDENS_ANO = 
         "SELECT * FROM Ordem WHERE tickerAtivo = ? AND strftime('%Y', dataOrdem) = ? LIMIT 1";
     private static final String SELECT_ORDENS_MES =

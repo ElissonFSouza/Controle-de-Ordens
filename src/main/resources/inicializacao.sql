@@ -1,9 +1,13 @@
+DROP TABLE Ativo;
+DROP TABLE Ordem;
+
 CREATE TABLE IF NOT EXISTS Ativo (
     ticker TEXT PRIMARY KEY,
     nome TEXT,
     quantidade REAL,
     precoMedio REAL,
-    saldoVendas REAL  
+    saldoVendas REAL,
+    totalGasto REAL 
 );
 
 CREATE TABLE IF NOT EXISTS Ordem (

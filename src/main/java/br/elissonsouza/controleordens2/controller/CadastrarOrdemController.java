@@ -74,7 +74,7 @@ public class CadastrarOrdemController implements Initializable {
         tfPreco.textProperty().addListener((observable, oldValue, newValue) -> updateTotal());
 
         lblnomeAtivo.setText(App.getNomeAtivo() + " (" + App.getTickerAtivo().toUpperCase() + ")");
-        tfTotal.setText(total.toString());
+        tfTotal.setText("R$ " + total.toString().replace(".", ","));
     }
 
     private void applyNumericFilter(TextField textField) {
@@ -109,7 +109,7 @@ public class CadastrarOrdemController implements Initializable {
         }
 
         total = quantidade.multiply(preco).setScale(2, RoundingMode.HALF_UP);
-        tfTotal.setText(total.toString().replace(".", ","));          
+        tfTotal.setText("R$ " + total.toString().replace(".", ","));          
     }
 
     @FXML
@@ -124,7 +124,7 @@ public class CadastrarOrdemController implements Initializable {
 
         dataOrdem = dpData.getValue();
 
-        Ordem ordem = OrdemDAO.criarOrdem("Compra", dataOrdem, quantidade, preco, taxa, quantidade.multiply(precoMedio), App.getTickerAtivo());        
+        Ordem ordem = OrdemDAO.criarOrdem(App.getTipoOrdem(), dataOrdem, quantidade, preco, taxa, quantidade.multiply(precoMedio), App.getTickerAtivo());        
         OrdemDAO.inserirOrdem(ordem, App.getAtivo(), App.getNomeAtivo());
 
         App.setRoot("TelaInicial");
