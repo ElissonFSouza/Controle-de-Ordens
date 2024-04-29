@@ -1,7 +1,9 @@
-package br.elissonsouza.controleordens;
+package br.elissonsouza.controleordens2.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import br.elissonsouza.controleordens2.App;
 
 public class Ordem {
     private final LocalDate dataOrdem;

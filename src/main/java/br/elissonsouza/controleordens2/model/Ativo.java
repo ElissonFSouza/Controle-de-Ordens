@@ -1,4 +1,4 @@
-package br.elissonsouza.controleordens;
+package br.elissonsouza.controleordens2.model;
 
 import java.math.BigDecimal;
 

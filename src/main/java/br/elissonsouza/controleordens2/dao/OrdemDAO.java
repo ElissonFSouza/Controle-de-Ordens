@@ -1,4 +1,4 @@
-package br.elissonsouza.controleordens;
+package br.elissonsouza.controleordens2.dao;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -7,6 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import br.elissonsouza.controleordens2.Database;
+import br.elissonsouza.controleordens2.model.Ativo;
+import br.elissonsouza.controleordens2.model.Ordem;
+import br.elissonsouza.controleordens2.model.OrdemVenda;
 
 public class OrdemDAO {
     private static final String SELECT_ORDENS_ANO = 

@@ -1,10 +1,16 @@
-package br.elissonsouza.controleordens;
+package br.elissonsouza.controleordens2.dao;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import br.elissonsouza.controleordens2.Database;
+import br.elissonsouza.controleordens2.model.Ativo;
+import br.elissonsouza.controleordens2.model.Ordem;
+import br.elissonsouza.controleordens2.model.OrdemVenda;
 
 public class AtivoDAO {
     private static final String INSERT_ATIVO =
@@ -55,7 +61,7 @@ public class AtivoDAO {
 
         } else {
             quantidadeAtivo = quantidadeAtivo.add(quantidadeOrdem.subtract(taxaOrdem));
-            precoMedioAtivo = (totalAtivo.add(totalOrdem)).divide(quantidadeAtivo.add(taxaOrdem));
+            precoMedioAtivo = totalAtivo.add(precoOrdem.multiply(quantidadeOrdem.subtract(taxaOrdem))).divide(quantidadeAtivo, 6, RoundingMode.HALF_UP);
         }        
 
         Connection connection = null;
