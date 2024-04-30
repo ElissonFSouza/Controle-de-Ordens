@@ -1,4 +1,4 @@
-package br.elissonsouza.controleordens2.model;
+package br.elissonsouza.controleordens.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

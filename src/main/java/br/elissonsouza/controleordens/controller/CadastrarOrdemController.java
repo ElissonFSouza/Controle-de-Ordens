@@ -1,8 +1,4 @@
-package br.elissonsouza.controleordens2.controller;
-
-import br.elissonsouza.controleordens2.App;
-import br.elissonsouza.controleordens2.dao.OrdemDAO;
-import br.elissonsouza.controleordens2.model.Ordem;
+package br.elissonsouza.controleordens.controller;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,6 +7,9 @@ import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
 
+import br.elissonsouza.controleordens.App;
+import br.elissonsouza.controleordens.dao.OrdemDAO;
+import br.elissonsouza.controleordens.model.Ordem;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -78,7 +77,7 @@ public class CadastrarOrdemController implements Initializable {
 
         // Adiciona um evento de clique ao campo de texto do DatePicker para abrir o calendário
         dpData.getEditor().setOnMouseClicked(this::abrirCalendario);
-        
+
         lblnomeAtivo.setText(App.getNomeAtivo() + " (" + App.getTickerAtivo().toUpperCase() + ")");
 
         tfTotal.setText("R$ " + total.toString().replace(".", ","));

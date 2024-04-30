@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>br.elissonsouza.controleordens2</groupId>
+    <groupId>br.elissonsouza.controleordens</groupId>
     <artifactId>controle-ordens-javafx</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -77,7 +77,7 @@
                         <!-- Usage: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>br.elissonsouza.controleordens2.App</mainClass>
+                            <mainClass>br.elissonsouza.controleordens.App</mainClass>
                         </configuration>
                     </execution>
                 </executions>

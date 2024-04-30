@@ -1,18 +1,18 @@
-module br.elissonsouza.controleordens2 {
+module br.elissonsouza.controleordens {
     requires transitive java.sql;
     requires javafx.controls;
     requires javafx.fxml;
     requires transitive javafx.graphics;
 
-    opens br.elissonsouza.controleordens2 to javafx.fxml;
-    exports br.elissonsouza.controleordens2;
+    opens br.elissonsouza.controleordens to javafx.fxml;
+    exports br.elissonsouza.controleordens;
     
-    opens br.elissonsouza.controleordens2.controller to javafx.fxml;
-    exports br.elissonsouza.controleordens2.controller;
+    opens br.elissonsouza.controleordens.controller to javafx.fxml;
+    exports br.elissonsouza.controleordens.controller;
 
-    opens br.elissonsouza.controleordens2.model to javafx.fxml;
-    exports br.elissonsouza.controleordens2.model;
+    opens br.elissonsouza.controleordens.model to javafx.fxml;
+    exports br.elissonsouza.controleordens.model;
 
-    opens br.elissonsouza.controleordens2.dao to javafx.fxml;
-    exports br.elissonsouza.controleordens2.dao;
+    opens br.elissonsouza.controleordens.dao to javafx.fxml;
+    exports br.elissonsouza.controleordens.dao;
 }

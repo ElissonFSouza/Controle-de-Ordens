@@ -1,4 +1,4 @@
-package br.elissonsouza.controleordens2;
+package br.elissonsouza.controleordens;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package br.elissonsouza.controleordens2;
+package br.elissonsouza.controleordens;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -11,8 +11,8 @@ import javafx.stage.Window;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
-import br.elissonsouza.controleordens2.controller.AvisoController;
-import br.elissonsouza.controleordens2.model.Ativo;
+import br.elissonsouza.controleordens.controller.AvisoController;
+import br.elissonsouza.controleordens.model.Ativo;
 
 public class App extends Application {
 

@@ -1,4 +1,4 @@
-package br.elissonsouza.controleordens2.dao;
+package br.elissonsouza.controleordens.dao;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -7,10 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import br.elissonsouza.controleordens2.Database;
-import br.elissonsouza.controleordens2.model.Ativo;
-import br.elissonsouza.controleordens2.model.Ordem;
-import br.elissonsouza.controleordens2.model.OrdemVenda;
+import br.elissonsouza.controleordens.Database;
+import br.elissonsouza.controleordens.model.Ativo;
+import br.elissonsouza.controleordens.model.Ordem;
+import br.elissonsouza.controleordens.model.OrdemVenda;
 
 public class AtivoDAO {
     private static final String INSERT_ATIVO =

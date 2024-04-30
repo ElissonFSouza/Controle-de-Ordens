@@ -1,4 +1,4 @@
-package br.elissonsouza.controleordens2.controller;
+package br.elissonsouza.controleordens.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
