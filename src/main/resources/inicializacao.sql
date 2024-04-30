@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS Ativo (
     quantidade REAL,
     precoMedio REAL,
     saldoVendas REAL,
-    totalGasto REAL 
+    totalComprado REAL 
 );
 
 CREATE TABLE IF NOT EXISTS Ordem (

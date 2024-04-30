@@ -12,9 +12,9 @@
    <children>
       <VBox alignment="BOTTOM_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="400" spacing="30.0">
          <children>
-            <Label fx:id="lblMensagem" text="Mensagem" textFill="#404040">
+            <Label fx:id="lblMensagem" alignment="CENTER" contentDisplay="CENTER" text="Mensagem" textAlignment="CENTER" textFill="#404040" wrapText="true">
                <font>
-                  <Font name="System Bold" size="20.0" />
+                  <Font name="System Bold" size="18.0" />
                </font>
             </Label>
             <Button fx:id="btnOK" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#fecharJanela" prefHeight="30.0" prefWidth="70.0" text="OK" textFill="#404040">
@@ -26,6 +26,9 @@
                </cursor>
             </Button>
          </children>
+         <padding>
+            <Insets left="20.0" right="20.0" />
+         </padding>
       </VBox>
    </children>
 </AnchorPane>

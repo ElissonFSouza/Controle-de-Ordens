@@ -1,5 +1,6 @@
 package br.elissonsouza.controleordens2.controller;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -38,9 +39,11 @@ public class InformarTickerController implements Initializable {
             Ativo ativo = AtivoDAO.pesquisarAtivo(tickerAtivo);
             App.setAtivo(ativo);
 
-            if (App.getTipoOrdem().equals("Venda") && ativo == null) {
-                App.mostrarAviso("Você não possui este ativo.", tfTicker.getScene().getWindow());
-                                             
+            if (App.getTipoOrdem().equals("Venda")
+                && (ativo == null || ativo.getQuantidade().compareTo(BigDecimal.ZERO) == 0)) {
+                    
+                App.mostrarAviso("Você não possui este ativo", tfTicker.getScene().getWindow());  
+                                          
             } else {
                 App.setTickerAtivo(tickerAtivo);
 

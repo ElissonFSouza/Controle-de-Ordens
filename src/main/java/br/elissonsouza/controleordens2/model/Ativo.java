@@ -8,7 +8,7 @@ public class Ativo {
     private BigDecimal quantidade;
     private BigDecimal precoMedio; 
     private BigDecimal saldoVendas;
-    private BigDecimal totalGasto;
+    private BigDecimal totalComprado;
 
     public Ativo(String ticker, String nome, BigDecimal quantidade, BigDecimal precoMedio, BigDecimal saldoVendas, BigDecimal totalGasto) {
         this.ticker = ticker;
@@ -16,7 +16,7 @@ public class Ativo {
         this.quantidade = quantidade;
         this.precoMedio = precoMedio;
         this.saldoVendas = saldoVendas;
-        this.totalGasto = totalGasto;
+        this.totalComprado = totalGasto;
     }
 
     public String getTicker() {
@@ -39,13 +39,13 @@ public class Ativo {
         return saldoVendas;
     }
 
-    public BigDecimal getTotalGasto() {
-        return totalGasto;
+    public BigDecimal getTotalComprado() {
+        return totalComprado;
     }
 
-    @Override
-    public String toString() {
-        return "\n========= " + ticker + " =========" + "\nNome: " + nome + "\nQuantidade: "+ quantidade
-        + "\nPreço médio: R$ " + precoMedio + "\nTotal atual: R$ " + quantidade.multiply(precoMedio) + "\nSaldo de vendas: R$ " + saldoVendas;
-    }
+    // @Override
+    // public String toString() {
+    //     return "\n========= " + ticker + " =========" + "\nNome: " + nome + "\nQuantidade: "+ quantidade
+    //     + "\nPreço médio: R$ " + precoMedio + "\nTotal atual: R$ " + quantidade.multiply(precoMedio) + "\nSaldo de vendas: R$ " + saldoVendas;
+    // }
 }

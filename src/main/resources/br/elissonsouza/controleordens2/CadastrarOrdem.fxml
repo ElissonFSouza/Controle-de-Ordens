@@ -84,7 +84,10 @@
                               <Font size="13.0" />
                            </font>
                         </Label>
-                        <DatePicker fx:id="dpData" editable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="30.0" prefWidth="120.0" />
+                        <DatePicker fx:id="dpData" editable="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="30.0" prefWidth="120.0">
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor></DatePicker>
                      </children>
                      <HBox.margin>
                         <Insets />
@@ -99,13 +102,16 @@
                         <Font size="13.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="tfTotal" editable="false" prefHeight="35.0" prefWidth="140.0">
+                  <TextField fx:id="tfTotal" alignment="CENTER" editable="false" prefHeight="35.0" prefWidth="140.0">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin>
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font>
+                     <cursor>
+                        <Cursor fx:constant="DEFAULT" />
+                     </cursor>
                   </TextField>
                </children>
                <VBox.margin>

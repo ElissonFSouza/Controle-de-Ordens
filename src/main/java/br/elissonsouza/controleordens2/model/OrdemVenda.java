@@ -3,8 +3,6 @@ package br.elissonsouza.controleordens2.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import br.elissonsouza.controleordens2.App;
-
 public class OrdemVenda extends Ordem {
     private final BigDecimal custo;
 
@@ -17,11 +15,11 @@ public class OrdemVenda extends Ordem {
         return custo;
     }
 
-    @Override
-    public String toString() {
-        return "\nData da ordem: " + super.getDataOrdem().format(App.formatter) + "\nTipo: " + super.getTipo()
-               + "\nQuantidade: " + super.getTickerAtivo() + " " + super.getQuantidade()
-               + "\nPreço: R$ " + super.getPreco() + "\nTaxa: R$ " + super.getTaxa()
-               + "\nTotal da ordem: R$ " + super.getQuantidade().multiply(super.getPreco()) + "\nCusto: R$ " + custo;
-    }
+    // @Override
+    // public String toString() {
+    //     return "\nData da ordem: " + super.getDataOrdem().format(App.formatter) + "\nTipo: " + super.getTipo()
+    //            + "\nQuantidade: " + super.getTickerAtivo() + " " + super.getQuantidade()
+    //            + "\nPreço: R$ " + super.getPreco() + "\nTaxa: R$ " + super.getTaxa()
+    //            + "\nTotal da ordem: R$ " + super.getQuantidade().multiply(super.getPreco()) + "\nCusto: R$ " + custo;
+    // }
 }

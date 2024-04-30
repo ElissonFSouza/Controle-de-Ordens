@@ -18,6 +18,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.input.MouseEvent;
 
 public class CadastrarOrdemController implements Initializable {
 
@@ -57,6 +58,8 @@ public class CadastrarOrdemController implements Initializable {
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
+        lblTitulo.setText("Cadastrar ordem de " + App.getTipoOrdem().toLowerCase());
+
         // Bind para desabilitar o botão de cadastrar ordem se algum campo (exceto "Taxa") estiver vazio
         btnCadastrarOrdem.disableProperty().bind(
             tfQuantidade.textProperty().isEmpty()
@@ -73,8 +76,17 @@ public class CadastrarOrdemController implements Initializable {
         tfQuantidade.textProperty().addListener((observable, oldValue, newValue) -> updateTotal());
         tfPreco.textProperty().addListener((observable, oldValue, newValue) -> updateTotal());
 
+        // Adiciona um evento de clique ao campo de texto do DatePicker para abrir o calendário
+        dpData.getEditor().setOnMouseClicked(this::abrirCalendario);
+        
         lblnomeAtivo.setText(App.getNomeAtivo() + " (" + App.getTickerAtivo().toUpperCase() + ")");
+
         tfTotal.setText("R$ " + total.toString().replace(".", ","));
+    }
+
+    @FXML
+    private void abrirCalendario(MouseEvent event) {
+        dpData.show();
     }
 
     private void applyNumericFilter(TextField textField) {
@@ -114,20 +126,27 @@ public class CadastrarOrdemController implements Initializable {
 
     @FXML
     private void cadastrarOrdem() {
-        if (App.getAtivo() != null) {
-            precoMedio = App.getAtivo().getPrecoMedio();
+        if (App.getTipoOrdem().equals("Venda") && quantidade.compareTo(App.getAtivo().getQuantidade()) > 0) {
+            App.mostrarAviso("Você não possui quantidade suficiente para esta venda", tfQuantidade.getScene().getWindow());
+            
+        } else {
+            if (App.getAtivo() != null) {
+                precoMedio = App.getAtivo().getPrecoMedio();
+            }
+    
+            if (!tfTaxa.getText().isEmpty()) {
+                taxa = new BigDecimal(tfTaxa.getText().replace(',', '.'));
+            }        
+    
+            dataOrdem = dpData.getValue();
+    
+            Ordem ordem = OrdemDAO.criarOrdem(App.getTipoOrdem(), dataOrdem, quantidade, preco, taxa, quantidade.multiply(precoMedio), App.getTickerAtivo());        
+            OrdemDAO.inserirOrdem(ordem, App.getAtivo(), App.getNomeAtivo());
+            
+            App.mostrarAviso("Ordem cadastrada com sucesso", btnCadastrarOrdem.getScene().getWindow());
+
+            App.setRoot("TelaInicial");
         }
-
-        if (!tfTaxa.getText().isEmpty()) {
-            taxa = new BigDecimal(tfTaxa.getText().replace(',', '.'));
-        }        
-
-        dataOrdem = dpData.getValue();
-
-        Ordem ordem = OrdemDAO.criarOrdem(App.getTipoOrdem(), dataOrdem, quantidade, preco, taxa, quantidade.multiply(precoMedio), App.getTickerAtivo());        
-        OrdemDAO.inserirOrdem(ordem, App.getAtivo(), App.getNomeAtivo());
-
-        App.setRoot("TelaInicial");
     }
 
     @FXML

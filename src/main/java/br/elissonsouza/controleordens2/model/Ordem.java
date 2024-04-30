@@ -3,8 +3,6 @@ package br.elissonsouza.controleordens2.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import br.elissonsouza.controleordens2.App;
-
 public class Ordem {
     private final LocalDate dataOrdem;
     private final BigDecimal quantidade;
@@ -46,9 +44,9 @@ public class Ordem {
         return tickerAtivo;
     }
 
-    @Override
-    public String toString() {
-        return "\nData da ordem: " + dataOrdem.format(App.formatter) + "\nTipo: " + tipo +"\nQuantidade: " + tickerAtivo + " " + quantidade
-               + "\nPreço: R$ " + preco + "\nTaxa: " + tickerAtivo + " " + taxa + "\nTotal da ordem: R$ " + quantidade.multiply(preco);
-    }
+    // @Override
+    // public String toString() {
+    //     return "\nData da ordem: " + dataOrdem.format(App.formatter) + "\nTipo: " + tipo +"\nQuantidade: " + tickerAtivo + " " + quantidade
+    //            + "\nPreço: R$ " + preco + "\nTaxa: " + tickerAtivo + " " + taxa + "\nTotal da ordem: R$ " + quantidade.multiply(preco);
+    // }
 }

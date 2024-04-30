@@ -14,9 +14,9 @@ import br.elissonsouza.controleordens2.model.OrdemVenda;
 
 public class AtivoDAO {
     private static final String INSERT_ATIVO =
-        "INSERT INTO Ativo (ticker, nome, quantidade, precoMedio, saldoVendas, totalGasto) VALUES (?, ?, ?, ?, 0, ?)";
+        "INSERT INTO Ativo (ticker, nome, quantidade, precoMedio, saldoVendas, totalComprado) VALUES (?, ?, ?, ?, 0, ?)";
     private static final String UPDATE_ATIVO =
-        "UPDATE Ativo SET quantidade = ?, precoMedio = ?, saldoVendas = ?, totalGasto = ? WHERE ticker = ?";
+        "UPDATE Ativo SET quantidade = ?, precoMedio = ?, saldoVendas = ?, totalComprado = ? WHERE ticker = ?";
     private static final String PESQUISAR_ATIVO =
         "SELECT * FROM Ativo WHERE ticker = ? OR LOWER(Nome) = LOWER(?)";
     private static final String LISTAR_ATIVOS =
@@ -33,7 +33,7 @@ public class AtivoDAO {
                 preparedStatement.setString(2, nomeAtivo);
                 preparedStatement.setBigDecimal(3, ordem.getQuantidade().subtract(ordem.getTaxa()));
                 preparedStatement.setBigDecimal(4, ordem.getPreco());
-                preparedStatement.setBigDecimal(5, ordem.getQuantidade().multiply(ordem.getPreco()));
+                preparedStatement.setBigDecimal(5, ordem.getQuantidade());
                 preparedStatement.executeUpdate();
             }         
 
@@ -47,7 +47,7 @@ public class AtivoDAO {
         BigDecimal qtdAtivo = ativo.getQuantidade();        
         BigDecimal precoMedio = ativo.getPrecoMedio();
         BigDecimal saldoVendas = ativo.getSaldoVendas();
-        BigDecimal totalGasto = ativo.getTotalGasto();
+        BigDecimal totalComprado = ativo.getTotalComprado();
         // Obter dados da ordem atual
         BigDecimal qtdOrdem = ordem.getQuantidade();
         BigDecimal precoOrdem = ordem.getPreco();
@@ -58,12 +58,13 @@ public class AtivoDAO {
         if (ordem instanceof OrdemVenda) { 
             qtdAtivo = qtdAtivo.subtract(qtdOrdem);            
             saldoVendas = saldoVendas.add(totalOrdem.subtract(qtdOrdem.multiply(precoMedio)).subtract(taxaOrdem));
-            if (qtdAtivo.equals(BigDecimal.ZERO)) precoMedio = BigDecimal.ZERO;
+            totalComprado = totalComprado.subtract(qtdOrdem);
+            if (qtdAtivo.compareTo(BigDecimal.ZERO) == 0) precoMedio = BigDecimal.ZERO;            
 
         } else {
+            precoMedio = totalComprado.multiply(precoMedio).add(totalOrdem).divide(totalComprado.add(qtdOrdem), 6, RoundingMode.HALF_UP);
             qtdAtivo = qtdAtivo.add(qtdOrdem.subtract(taxaOrdem));
-            precoMedio = (precoMedio.multiply(totalGasto.add(totalOrdem))).divide(totalGasto.add(qtdOrdem.multiply(precoMedio)), 6, RoundingMode.HALF_UP);
-            totalGasto = totalGasto.add(totalOrdem);
+            totalComprado = totalComprado.add(qtdOrdem);
         }        
 
         Connection connection = null;
@@ -75,7 +76,7 @@ public class AtivoDAO {
                 preparedStatement.setBigDecimal(1, qtdAtivo);
                 preparedStatement.setBigDecimal(2, precoMedio);
                 preparedStatement.setBigDecimal(3, saldoVendas);
-                preparedStatement.setBigDecimal(4, totalGasto);
+                preparedStatement.setBigDecimal(4, totalComprado);
                 preparedStatement.setString(5, ativo.getTicker());
                 preparedStatement.executeUpdate();
             }            
@@ -104,9 +105,9 @@ public class AtivoDAO {
                         BigDecimal quantidade = resultSet.getBigDecimal("quantidade");
                         BigDecimal precoMedio = resultSet.getBigDecimal("precoMedio");
                         BigDecimal saldoVendas = resultSet.getBigDecimal("saldoVendas");
-                        BigDecimal totalGasto = resultSet.getBigDecimal("totalGasto");
+                        BigDecimal totalComprado = resultSet.getBigDecimal("totalComprado");
         
-                        ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas, totalGasto);
+                        ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas, totalComprado);
                     }
                 }   
             }            
@@ -138,9 +139,9 @@ public class AtivoDAO {
                             BigDecimal quantidade = resultSet.getBigDecimal("quantidade");
                             BigDecimal precoMedio = resultSet.getBigDecimal("precoMedio");
                             BigDecimal saldoVendas = resultSet.getBigDecimal("saldoVendas");
-                            BigDecimal totalGasto = resultSet.getBigDecimal("totalGasto");
+                            BigDecimal totalComprado = resultSet.getBigDecimal("totalComprado");
         
-                            Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas, totalGasto);
+                            Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas, totalComprado);
                             System.out.println(ativo);
                         }
                     }
