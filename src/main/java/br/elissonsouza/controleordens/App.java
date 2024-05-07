@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 
 import br.elissonsouza.controleordens.controller.AvisoController;
@@ -24,6 +25,7 @@ public class App extends Application {
     private static String tickerAtivo;
     private static String nomeAtivo = null;
     private static String tipoOrdem;
+    private static BigDecimal totalGasto;
 
     public static Ativo getAtivo() {
         return ativo;
@@ -57,6 +59,14 @@ public class App extends Application {
         App.tipoOrdem = tipoOrdem;
     }
 
+    public static BigDecimal getTotalGasto() {
+        return totalGasto;
+    }
+
+    public static void setTotalGasto(BigDecimal totalGasto) {
+        App.totalGasto = totalGasto;
+    }
+
     @Override
     public void start(Stage stage) throws IOException {
         scene = new Scene(loadFXML("TelaInicial"));
@@ -77,7 +87,7 @@ public class App extends Application {
     }
 
     private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("fxml/" + fxml + ".fxml"));
         return fxmlLoader.load();
     }
 
@@ -88,7 +98,7 @@ public class App extends Application {
         //stage.setTitle("Aviso");
 
         try {
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("Aviso.fxml"));
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("fxml/Aviso.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
             stage.setScene(scene);

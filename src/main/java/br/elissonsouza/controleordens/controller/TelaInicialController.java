@@ -42,6 +42,6 @@ public class TelaInicialController implements Initializable {
 
     @FXML
     private void listarAtivos() {
-
+        App.setRoot("MeusAtivos");
     }
 }

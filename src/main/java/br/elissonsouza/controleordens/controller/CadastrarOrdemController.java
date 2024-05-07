@@ -31,7 +31,7 @@ public class CadastrarOrdemController implements Initializable {
     private Label lblTitulo;
 
     @FXML
-    private Label lblnomeAtivo;
+    private Label lblNomeAtivo;
 
     @FXML
     private TextField tfQuantidade;
@@ -78,7 +78,7 @@ public class CadastrarOrdemController implements Initializable {
         // Adiciona um evento de clique ao campo de texto do DatePicker para abrir o calendário
         dpData.getEditor().setOnMouseClicked(this::abrirCalendario);
 
-        lblnomeAtivo.setText(App.getNomeAtivo() + " (" + App.getTickerAtivo().toUpperCase() + ")");
+        lblNomeAtivo.setText(App.getNomeAtivo() + " (" + App.getTickerAtivo().toUpperCase() + ")");
 
         tfTotal.setText("R$ " + total.toString().replace(".", ","));
     }

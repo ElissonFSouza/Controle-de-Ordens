@@ -23,7 +23,7 @@
                   <Font name="System Bold" size="16.0" />
                </font>
             </Label>
-            <Label fx:id="lblnomeAtivo" text="Nome (TICKER)" textFill="#575757">
+            <Label fx:id="lblNomeAtivo" text="Nome (TICKER)" textFill="#575757">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>

@@ -3,6 +3,7 @@ module br.elissonsouza.controleordens {
     requires javafx.controls;
     requires javafx.fxml;
     requires transitive javafx.graphics;
+    requires javafx.base;
 
     opens br.elissonsouza.controleordens to javafx.fxml;
     exports br.elissonsouza.controleordens;

@@ -2,45 +2,84 @@ package br.elissonsouza.controleordens.model;
 
 import java.math.BigDecimal;
 
-public class Ativo {
-    private final String ticker;
-    private final String nome;
-    private BigDecimal quantidade;
-    private BigDecimal precoMedio; 
-    private BigDecimal saldoVendas;
-    private BigDecimal totalComprado;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
-    public Ativo(String ticker, String nome, BigDecimal quantidade, BigDecimal precoMedio, BigDecimal saldoVendas, BigDecimal totalGasto) {
-        this.ticker = ticker;
-        this.nome = nome;
-        this.quantidade = quantidade;
-        this.precoMedio = precoMedio;
-        this.saldoVendas = saldoVendas;
-        this.totalComprado = totalGasto;
+public class Ativo {
+    private final StringProperty ticker;
+    private final StringProperty nome;
+    private final ObjectProperty<BigDecimal> quantidade;
+    private final ObjectProperty<BigDecimal> precoMedio; 
+    private final ObjectProperty<BigDecimal> saldoVendas;
+    private final ObjectProperty<BigDecimal> totalComprado;
+    private final ObjectProperty<BigDecimal> valorTotal;
+
+    public Ativo(String ticker, String nome, BigDecimal quantidade, BigDecimal precoMedio, BigDecimal saldoVendas, BigDecimal totalComprado) {
+        this.ticker = new SimpleStringProperty(ticker);
+        this.nome = new SimpleStringProperty(nome);
+        this.quantidade = new SimpleObjectProperty<>(quantidade);
+        this.precoMedio = new SimpleObjectProperty<>(precoMedio);
+        this.saldoVendas = new SimpleObjectProperty<>(saldoVendas);
+        this.totalComprado = new SimpleObjectProperty<>(totalComprado);
+        this.valorTotal = new SimpleObjectProperty<>(this.quantidade.get().multiply(this.precoMedio.get()));
     }
 
-    public String getTicker() {
+    public StringProperty tickerProperty() {
         return ticker;
     }
 
-    public String getNome() {
+    public StringProperty nomeProperty() {
         return nome;
     }
 
-    public BigDecimal getQuantidade() {
+    public ObjectProperty<BigDecimal> quantidadeProperty() {
         return quantidade;
     }
 
-    public BigDecimal getPrecoMedio() {
+    public ObjectProperty<BigDecimal> precoMedioProperty() {
         return precoMedio;
     }
 
-    public BigDecimal getSaldoVendas() {
+    public ObjectProperty<BigDecimal> saldoVendasProperty() {
         return saldoVendas;
     }
 
-    public BigDecimal getTotalComprado() {
+    public ObjectProperty<BigDecimal> totalCompradoProperty() {
         return totalComprado;
+    }
+
+    public ObjectProperty<BigDecimal> valorTotalProperty() {
+        return valorTotal;
+    }
+
+    public String getTicker() {
+        return ticker.get();
+    }
+
+    public String getNome() {
+        return nome.get();
+    }
+
+    public BigDecimal getQuantidade() {
+        return quantidade.get();
+    }
+
+    public BigDecimal getPrecoMedio() {
+        return precoMedio.get();
+    }
+
+    public BigDecimal getSaldoVendas() {
+        return saldoVendas.get();
+    }
+
+    public BigDecimal getTotalComprado() {
+        return totalComprado.get();
+    }
+
+    public BigDecimal getValorTotal() {
+        return valorTotal.get();
     }
 
     // @Override

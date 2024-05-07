@@ -7,10 +7,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import br.elissonsouza.controleordens.App;
 import br.elissonsouza.controleordens.Database;
 import br.elissonsouza.controleordens.model.Ativo;
 import br.elissonsouza.controleordens.model.Ordem;
 import br.elissonsouza.controleordens.model.OrdemVenda;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class AtivoDAO {
     private static final String INSERT_ATIVO =
@@ -119,7 +122,11 @@ public class AtivoDAO {
         return ativo;
     }
 
-    public static void listarAtivos() {
+    public static ObservableList<Ativo> listarAtivos() {
+        ObservableList<Ativo> listaAtivos = FXCollections.observableArrayList();
+        
+        BigDecimal totalGasto = BigDecimal.ZERO;
+
         Connection connection = null;
 
         try {
@@ -131,9 +138,7 @@ public class AtivoDAO {
                         System.out.println("\nNão há ativos na carteira.");
         
                     } else {
-                        System.out.println("\n========= Lista de ativos ==========");
-        
-                        while (resultSet.next()) {
+                         while (resultSet.next()) {
                             String ticker = resultSet.getString("ticker");
                             String nome = resultSet.getString("nome");
                             BigDecimal quantidade = resultSet.getBigDecimal("quantidade");
@@ -142,7 +147,9 @@ public class AtivoDAO {
                             BigDecimal totalComprado = resultSet.getBigDecimal("totalComprado");
         
                             Ativo ativo = new Ativo(ticker, nome, quantidade, precoMedio, saldoVendas, totalComprado);
-                            System.out.println(ativo);
+                            listaAtivos.add(ativo);
+
+                            totalGasto = totalGasto.add(totalComprado.multiply(precoMedio));
                         }
                     }
                 }
@@ -151,5 +158,9 @@ public class AtivoDAO {
         } catch (SQLException e) {
             System.err.println("\nHouve um erro ao listar os ativos: " + e.getMessage());
         }
+
+        App.setTotalGasto(totalGasto);
+
+        return listaAtivos;
     }
 }
